@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Campo Don Michele FIORE</title>
+
+    <link rel="manifest" href="manifest.json">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Campo ANSPI">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#74b9ff">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Nunito', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #a8e6cf 0%, #7fcdcd 30%, #74b9ff 60%, #81ecec 100%);
+        }
+
+        /* ===== SPLASH ===== */
+        #splash {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, #a8e6cf 0%, #7fcdcd 30%, #74b9ff 60%, #81ecec 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+            padding: 20px;
+        }
+
+        #splash.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .splash-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 32px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(116, 185, 255, 0.25);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .splash-logo {
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+            margin-bottom: 20px;
+        }
+
+        .splash-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #0984e3, #74b9ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 6px;
+        }
+
+        .splash-subtitle {
+            color: #636e72;
+            font-size: 0.9rem;
+            margin-bottom: 28px;
+        }
+
+        #btn-install {
+            display: none;
+            background: linear-gradient(135deg, #00b894, #55efc4);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 12px;
+            box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4);
+        }
+
+        #btn-enter {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 8px 25px rgba(116, 185, 255, 0.4);
+        }
+
+        #ios-hint {
+            display: none;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+            font-size: 0.82rem;
+            color: #856404;
+            text-align: left;
+            line-height: 1.6;
+        }
+
+        #installed-msg {
+            display: none;
+            background: #d4edda;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            font-size: 0.88rem;
+            color: #155724;
+            font-weight: 600;
+        }
+
+        /* ===== LOADING ===== */
+        #frame-loading {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, #a8e6cf 0%, #7fcdcd 30%, #74b9ff 60%, #81ecec 100%);
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        #frame-loading.active { display: flex; }
+
+        .spinner {
+            width: 52px;
+            height: 52px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text {
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        /* ===== IFRAME A TUTTO SCHERMO ===== */
+        #app-frame {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            border: none;
+            z-index: 1000;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+    <div class="splash-card">
+        <img src="icon-192.png" alt="Logo Campo ANSPI" class="splash-logo">
+        <div class="splash-title">Campo Don Michele FIORE</div>
+        <div class="splash-subtitle">⚽ Parrocchia Sant'Agostino · ANSPI Giovinazzo</div>
+
+        <div id="installed-msg">✅ App installata!</div>
+        <div id="ios-hint">
+            <strong>📱 Installa su iPhone:</strong><br>
+            Tocca <strong>Condividi</strong> (⬆️) in Safari,<br>
+            poi <strong>"Aggiungi alla schermata Home"</strong>.
+        </div>
+
+        <button id="btn-install">📲 Installa l'App</button>
+        <button id="btn-enter">🚀 Entra nel Campo</button>
+    </div>
+</div>
+
+<!-- LOADING -->
+<div id="frame-loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Caricamento...</div>
+</div>
+
+<!-- IFRAME A TUTTO SCHERMO -->
+<iframe
+    id="app-frame"
+    src=""
+    allow="fullscreen"
+    title="Campo Don Michele FIORE">
+</iframe>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwmRg1QHpxWpVttfAnZA0HHH_Z_J_VqLDM-9xfMQv7V-coRwubcmHT6yPTBUhabfkvo/exec';
+
+let deferredPrompt = null;
+
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+
+// Se già installata e aperta in standalone, vai subito all'app
+if (isStandalone) {
+    goToApp();
+}
+
+if (isIOS && !isStandalone) {
+    document.getElementById('ios-hint').style.display = 'block';
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('btn-install').style.display = 'block';
+});
+
+window.addEventListener('appinstalled', () => {
+    document.getElementById('btn-install').style.display = 'none';
+    document.getElementById('installed-msg').style.display = 'block';
+    deferredPrompt = null;
+});
+
+document.getElementById('btn-install').addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+        document.getElementById('btn-install').style.display = 'none';
+        document.getElementById('installed-msg').style.display = 'block';
+    }
+    deferredPrompt = null;
+});
+
+document.getElementById('btn-enter').addEventListener('click', () => {
+    goToApp();
+});
+
+function goToApp() {
+    const splash = document.getElementById('splash');
+    const loading = document.getElementById('frame-loading');
+    const frame = document.getElementById('app-frame');
+
+    // Nascondi splash
+    splash.classList.add('hidden');
+    setTimeout(() => { splash.style.display = 'none'; }, 500);
+
+    // Mostra loading
+    loading.classList.add('active');
+
+    // Carica GAS nell'iframe a tutto schermo
+    frame.src = GAS_URL;
+    frame.style.display = 'block';
+
+    // Nascondi loading quando iframe è pronto
+    frame.onload = () => {
+        loading.classList.remove('active');
+    };
+
+    // Fallback timeout
+    setTimeout(() => {
+        loading.classList.remove('active');
+    }, 10000);
+}
+</script>
+
+</body>
+</html>

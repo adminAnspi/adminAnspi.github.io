@@ -1,0 +1,26 @@
+{
+  "name": "Campo Don Michele FIORE",
+  "short_name": "Campo ANSPI",
+  "description": "Sistema prenotazioni Campo Don Michele FIORE - Parrocchia Sant'Agostino ANSPI Giovinazzo",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#74b9ff",
+  "theme_color": "#74b9ff",
+  "orientation": "portrait-primary",
+  "lang": "it",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
