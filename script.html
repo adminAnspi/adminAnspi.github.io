@@ -234,7 +234,10 @@ function setupEventListeners() {
     document.getElementById('btn-view-weekly').addEventListener('click', () => toggleCalendarView('weekly'));
     document.getElementById('close-confirm-modal').addEventListener('click', () => closeModal('confirmModal'));
     document.getElementById('btn-cancel-final-booking').addEventListener('click', () => closeModal('confirmModal'));
-    document.getElementById('close-details-modal').addEventListener('click', () => closeModal('details-modal'));
+    document.getElementById('close-details-modal').addEventListener('click', function() {
+    window._spazioSelezionato = null;
+    closeModal('details-modal');
+});
     document.getElementById('calendarDays').addEventListener('click', (e) => {
         const dayCell = e.target.closest('.calendar-day');
         if (dayCell) {
@@ -250,8 +253,9 @@ function setupEventListeners() {
     document.getElementById('loginPassword').addEventListener('input', handlePasswordInput);
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-        }
+    window._spazioSelezionato = null;
+    document.querySelectorAll('.modal').forEach(function(m) { m.style.display = 'none'; });
+}
     });
     // ✅ Event listener rimosso - ora gestito centralmente in AdminUtils.txt
     document.querySelector('.status-filters').addEventListener('click', (e) => {
@@ -284,6 +288,12 @@ function setupEventListeners() {
         });
     }
 
+const eventiSpecialiTbodyCheck = document.getElementById("eventiSpecialiTableBody");
+if (eventiSpecialiTbodyCheck) {
+    eventiSpecialiTbodyCheck.addEventListener('change', e => {
+        if (e.target.classList.contains('admin-ricorrente-check')) updateRecurring(e.target.dataset.id, e.target);
+    });
+}
     const closeArchiveModal = document.getElementById('close-archive-modal');
     if (closeArchiveModal) {
         closeArchiveModal.addEventListener('click', () => closeModal('archiveModal'));
@@ -541,40 +551,63 @@ function handlePasswordInput() {
 }
 
 function toggleAdminCampoSelection() {
-    const evento = document.getElementById("adminEvento")?.value || "";
-    const emailGroup = document.getElementById("adminEmailGroup");
-    const emailField = document.getElementById("adminEmail");
-    const recurringGroup = document.getElementById("adminRecurringGroup");
-    const confirmGroup = document.getElementById("adminConfirmGroup");
-    const adminNoteGroup = document.getElementById('admin-note-group');
-    const adminExclusiveDetails = document.getElementById('admin-exclusive-event-details');
-    const adminPersonCount = document.getElementById('admin-person-count');
-    const isSpecialEvent = evento === "compleanno" || evento === "eventi";
+    var evento = document.getElementById('adminEvento') ? document.getElementById('adminEvento').value : '';
+    var emailGroup = document.getElementById('adminEmailGroup');
+    var emailField = document.getElementById('adminEmail');
+    var recurringGroup = document.getElementById('adminRecurringGroup');
+    var confirmGroup = document.getElementById('adminConfirmGroup');
+    var adminNoteGroup = document.getElementById('admin-note-group');
+    var adminExclusiveDetails = document.getElementById('admin-exclusive-event-details');
+    var adminPersonCount = document.getElementById('admin-person-count');
+    var isSpecialEvent = evento === 'compleanno' || evento === 'eventi';
+    if (window._ultimoEventoAdmin !== evento) {
+    window._spazioSelezionato = null;
+    window._ultimoEventoAdmin = evento;
+}
+
     if (isSpecialEvent) {
-        if (emailGroup) emailGroup.style.display = "block";
+        if (emailGroup) emailGroup.style.display = 'block';
         if (emailField) emailField.required = true;
-        if (recurringGroup) recurringGroup.style.display = "none";
-        if (confirmGroup) confirmGroup.style.display = "block";
-        const ricorrenteField = document.getElementById('adminRicorrente');
+        if (recurringGroup) recurringGroup.style.display = 'none';
+        if (confirmGroup) confirmGroup.style.display = 'block';
+        var ricorrenteField = document.getElementById('adminRicorrente');
         if (ricorrenteField) ricorrenteField.checked = false;
         if (adminNoteGroup) adminNoteGroup.style.display = 'none';
         if (adminExclusiveDetails) adminExclusiveDetails.style.display = 'block';
         if (adminPersonCount) adminPersonCount.required = true;
+
+        // Mostra modal selezione spazio solo se non già selezionato
+        if (!window._spazioSelezionato) {
+            showSpazioModal(function(spazio) {
+                window._spazioSelezionato = spazio;
+                var spazioLabel = document.getElementById('admin-spazio-label');
+                if (spazioLabel) {
+                    spazioLabel.textContent = 'Spazio selezionato: ' + getCampoName(spazio);
+                    spazioLabel.style.display = 'block';
+                }
+            });
+        }
+
     } else {
-        if (emailGroup) emailGroup.style.display = "none";
+        if (emailGroup) emailGroup.style.display = 'none';
         if (emailField) {
             emailField.required = false;
-            emailField.value = "";
+            emailField.value = '';
         }
-        if (recurringGroup) recurringGroup.style.display = "block";
+        if (recurringGroup) recurringGroup.style.display = 'block';
         if (confirmGroup) {
-            confirmGroup.style.display = "none";
-            const confirmCheckbox = document.getElementById('adminConfermaEvento');
+            confirmGroup.style.display = 'none';
+            var confirmCheckbox = document.getElementById('adminConfermaEvento');
             if (confirmCheckbox) confirmCheckbox.checked = false;
         }
         if (adminNoteGroup) adminNoteGroup.style.display = 'block';
         if (adminExclusiveDetails) adminExclusiveDetails.style.display = 'none';
         if (adminPersonCount) adminPersonCount.required = false;
+
+        // Reset spazio selezionato
+        window._spazioSelezionato = null;
+        var spazioLabel = document.getElementById('admin-spazio-label');
+        if (spazioLabel) spazioLabel.style.display = 'none';
     }
 }
 
@@ -844,6 +877,8 @@ async function updateAllPanels() {
     }
 }
 function selectEvent(eventType) {
+  window._spazioSelezionato = null;
+window._ultimoEventoAdmin = null;
     if (selectedEvent && selectedEvent !== eventType) {
         console.log(`🔄 Cambio da ${selectedEvent} a ${eventType} - reset parziale`);
         resetFormKeepingData();
@@ -1935,12 +1970,15 @@ function updateEventiSpecialiTable() {
         
         const actionButtons = getActionButtons(b.id, b.stato || 'in_attesa');
         
+        const recurringControl = `<input type="checkbox" data-id="${b.id}" class="admin-ricorrente-check checkbox-large" ${b.ricorrente ? "checked" : ""}>`;
+
         return `<tr>
              <td>${b.id.replace('-V','')}</td>
              <td>${b.nome}</td>
              <td>${b.email}</td>
              <td>${getEventName(b.evento)}</td>
              <td>${formatDate(b.data)}<br>${b.ora}</td>
+             <td style="text-align:center">${recurringControl}</td>
              <td style="text-align:center">${statusBadge}</td>
              <td style="text-align:center">${actionButtons}</td>
          </tr>`;
@@ -2079,30 +2117,35 @@ function calculateEventsForDate(dateString, dataSource) {
         const today = new Date();
         const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         const currentDate = new Date(dateString.split('T')[0]);
-        
-        // 1. Eventi singoli (non ricorrenti)
+        const currentDateStr = dateString.split('T')[0];
+
+        // 1. Eventi singoli (non ricorrenti) — confronto per stringa
         const singleEvents = dataSource.filter(b => {
             const isRecurring = b.ricorrente === true || b.ricorrente === 'TRUE' || b.ricorrente === 'true' || b.ricorrente === 'sì';
             if (!b.data || isRecurring) return false;
-            const eventDate = new Date(b.data.split('T')[0]);
-            return eventDate.getTime() === currentDate.getTime();
+            const eventDateStr = b.data.split('T')[0];
+            return eventDateStr === currentDateStr;
         });
-        
-        // 2. Ricorrenze virtuali: mostra solo master e prossima occorrenza (+7 giorni)
+
+        // 2. Ricorrenze: mostra master e prossima occorrenza (+7 giorni)
         const recurringEvents = dataSource
             .filter(b => {
                 const isRecurring = b.ricorrente === true || b.ricorrente === 'TRUE' || b.ricorrente === 'true' || b.ricorrente === 'sì';
                 return isRecurring && b.data;
             })
             .filter(masterEvent => {
-                const masterDate = new Date(masterEvent.data.split('T')[0]);
+                const masterDateStr = masterEvent.data.split('T')[0];
+                const masterDate = new Date(masterDateStr);
                 const nextOccurrence = new Date(masterDate);
                 nextOccurrence.setDate(masterDate.getDate() + 7);
-                
-                const isMasterDate = currentDate.getTime() === masterDate.getTime();
-                const isNextOccurrence = currentDate.getTime() === nextOccurrence.getTime();
+                const nextOccurrenceStr = nextOccurrence.getFullYear() + '-' +
+                    String(nextOccurrence.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(nextOccurrence.getDate()).padStart(2, '0');
+
+                const isMasterDate = masterDateStr === currentDateStr;
+                const isNextOccurrence = nextOccurrenceStr === currentDateStr;
                 const isNotPast = currentDate >= todayStart;
-                
+
                 return (isMasterDate || isNextOccurrence) && isNotPast;
             })
             .map(masterEvent => ({
@@ -2111,24 +2154,36 @@ function calculateEventsForDate(dateString, dataSource) {
                 id: `${masterEvent.id}-V`
             }));
 
-        // 3. Unisci e filtra per stato
+        // 3. Unisci, filtra per stato e deduplica per ID base
         var combined = [...singleEvents, ...recurringEvents]
             .filter(event => event.stato !== 'in_attesa' && event.stato !== 'rifiutato');
 
-        // Se c'è un evento straordinario (compleanno/eventi) in questa data,
-        // rimuovi le ricorrenze virtuali proiettate — non sono realmente visibili
+        // Deduplicazione: se esiste sia il reale (-V da foglio) che il proiettato,
+        // tieni solo uno — preferisci quello reale dal foglio
+        var seenIds = {};
+        combined = combined.filter(function(e) {
+            var baseId = e.id.toString().replace('-V', '');
+            if (seenIds[baseId]) return false;
+            seenIds[baseId] = true;
+            return true;
+        });
+
+        // 4. Se c'è un evento straordinario REALE (non proiettato),
+        //    rimuovi solo le ricorrenze virtuali di calcetto/pallavolo
         var hasExtraordinary = combined.some(function(e) {
-            return e.evento === 'compleanno' || e.evento === 'eventi';
+            return (e.evento === 'compleanno' || e.evento === 'eventi')
+                   && !e.id.toString().includes('-V');
         });
 
         if (hasExtraordinary) {
             return combined.filter(function(e) {
-                return !e.id.toString().includes('-V');
+                var isCalcettoOrVolley = e.evento === 'calcetto' || e.evento === 'pallavolo';
+                return !(isCalcettoOrVolley && e.id.toString().includes('-V'));
             });
         }
 
         return combined;
-        
+
     } catch (error) {
         console.error('Errore calculateEventsForDate:', error);
         return [];
@@ -2484,7 +2539,122 @@ function showDetailsModal(booking) {
     el('details-modal-title').innerHTML = `<span class="details-list-icon">${ICONS.evento}</span> Dettagli Prenotazione`;
     const body = el('details-modal-body');
     const creationDate = booking.timestamp ? new Date(booking.timestamp).toLocaleString('it-IT') : 'N/D';
-    body.innerHTML = `<ul class="details-list"><li><span class="details-list-icon">${ICONS.codice}</span><span class="details-list-label">Codice:</span> <span class="details-list-value">${booking.id.replace('-V','')}</span></li><li><span class="details-list-icon">${ICONS.cliente}</span><span class="details-list-label">Cliente:</span> <span class="details-list-value">${booking.nome}</span></li><li><span class="details-list-icon">${ICONS.email}</span><span class="details-list-label">Email:</span> <span class="details-list-value">${booking.email}</span></li><li><span class="details-list-icon">${ICONS.telefono}</span><span class="details-list-label">Telefono:</span> <span class="details-list-value">${booking.telefono}</span></li><li><span class="details-list-icon">${ICONS.evento}</span><span class="details-list-label">Evento:</span> <span class="details-list-value">${getEventName(booking.evento)}</span></li><li><span class="details-list-icon">${ICONS.campo}</span><span class="details-list-label">Campo:</span> <span class="details-list-value">${getCampoName(booking.campo)}</span></li><li><span class="details-list-icon">${ICONS.data}</span><span class="details-list-label">Data:</span> <span class="details-list-value">${formatDate(booking.data)}</span></li><li><span class="details-list-icon">${ICONS.ora}</span><span class="details-list-label">Ora:</span> <span class="details-list-value">${booking.ora}</span></li><li><span class="details-list-icon">${ICONS.note}</span><span class="details-list-label">Note:</span> <span class="details-list-value" style="white-space: pre-wrap;">${booking.note || 'Nessuna'}</span></li><li><span class="details-list-icon">${ICONS.timestamp}</span><span class="details-list-label">Creata il:</span> <span class="details-list-value">${creationDate}</span></li></ul>`;
+
+    // Parsing post-it esistente
+    var postitStato = '';
+    var postitNote = '';
+    if (booking.postit) {
+        var parts = booking.postit.toString().split('|');
+        postitStato = parts[0] || '';
+        postitNote = parts[1] || '';
+    }
+
+    // Determina se è un evento archiviato
+    var isArchived = booking.archiviato === true ||
+                 booking.archiviato === 'true' ||
+                 booking.archiviato === 'TRUE' ||
+                 (booking.note && booking.note.toString().includes('[Archiviato:')) ||
+                 (new Date(booking.data) < new Date(new Date().toISOString().split('T')[0])) ||
+                 archivedBookings.some(function(b) { 
+                     return b.id === booking.id || b.id === booking.id.replace('-V',''); 
+                 });
+    body.innerHTML = `
+        <ul class="details-list">
+            <li><span class="details-list-icon">${ICONS.codice}</span><span class="details-list-label">Codice:</span> <span class="details-list-value">${booking.id.replace('-V','')}</span></li>
+            <li><span class="details-list-icon">${ICONS.cliente}</span><span class="details-list-label">Cliente:</span> <span class="details-list-value">${booking.nome}</span></li>
+            <li><span class="details-list-icon">${ICONS.email}</span><span class="details-list-label">Email:</span> <span class="details-list-value">${booking.email}</span></li>
+            <li><span class="details-list-icon">${ICONS.telefono}</span><span class="details-list-label">Telefono:</span> <span class="details-list-value">${booking.telefono}</span></li>
+            <li><span class="details-list-icon">${ICONS.evento}</span><span class="details-list-label">Evento:</span> <span class="details-list-value">${getEventName(booking.evento)}</span></li>
+            <li><span class="details-list-icon">${ICONS.campo}</span><span class="details-list-label">Campo:</span> <span class="details-list-value">${getCampoName(booking.campo)}</span></li>
+            <li><span class="details-list-icon">${ICONS.data}</span><span class="details-list-label">Data:</span> <span class="details-list-value">${formatDate(booking.data)}</span></li>
+            <li><span class="details-list-icon">${ICONS.ora}</span><span class="details-list-label">Ora:</span> <span class="details-list-value">${booking.ora}</span></li>
+            <li><span class="details-list-icon">${ICONS.note}</span><span class="details-list-label">Note:</span> <span class="details-list-value" style="white-space: pre-wrap;">${booking.note || 'Nessuna'}</span></li>
+            <li><span class="details-list-icon">${ICONS.timestamp}</span><span class="details-list-label">Creata il:</span> <span class="details-list-value">${creationDate}</span></li>
+        </ul>
+
+        ${isAdminLoggedIn ? `
+        <div style="margin-top: 20px; background: rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; border-left: 4px solid #fdcb6e;">
+            <h4 style="color: #fdcb6e; margin: 0 0 12px 0; font-size: 0.95rem;">📝 Post-It Evento</h4>
+
+            <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+                <button class="postit-stato-btn ${postitStato === 'svolto' ? 'active' : ''}"
+                    data-stato="svolto"
+                    style="padding: 6px 14px; border-radius: 20px; border: 2px solid #00b894; background: ${postitStato === 'svolto' ? '#00b894' : 'transparent'}; color: ${postitStato === 'svolto' ? 'white' : '#00b894'}; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+    ✅ Svolto
+</button>
+<button class="postit-stato-btn ${postitStato === 'non_svolto' ? 'active' : ''}"
+    data-stato="non_svolto"
+    style="padding: 6px 14px; border-radius: 20px; border: 2px solid #e74c3c; background: ${postitStato === 'non_svolto' ? '#e74c3c' : 'transparent'}; color: ${postitStato === 'non_svolto' ? 'white' : '#e74c3c'}; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+    ❌ Non Svolto
+</button>
+<button class="postit-stato-btn ${postitStato === 'parziale' ? 'active' : ''}"
+    data-stato="parziale"
+    style="padding: 6px 14px; border-radius: 20px; border: 2px solid #f39c12; background: ${postitStato === 'parziale' ? '#f39c12' : 'transparent'}; color: ${postitStato === 'parziale' ? 'white' : '#f39c12'}; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+    ⚠️ Parziale
+</button>
+            </div>
+
+            <textarea id="postit-note-input" rows="3"
+                placeholder="Note aggiuntive sull'evento..."
+                style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; background: white; color: #2d3436; font-size: 0.9rem; resize: vertical; box-sizing: border-box;"
+            >${postitNote}</textarea>
+
+            <button id="btn-salva-postit"
+                data-id="${booking.id.replace('-V','')}"
+                data-archived="${isArchived}"
+                style="margin-top: 10px; padding: 8px 20px; background: #fdcb6e; color: #2d3436; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
+                💾 Salva Post-It
+            </button>
+        </div>
+        ` : ''}
+    `;
+
+    // Stato selezionato corrente
+    var statoSelezionato = postitStato;
+
+    // Listener bottoni stato
+    body.querySelectorAll('.postit-stato-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        statoSelezionato = this.dataset.stato;
+        body.querySelectorAll('.postit-stato-btn').forEach(function(b) {
+            var colori = { svolto: '#00b894', non_svolto: '#e74c3c', parziale: '#f39c12' };
+            var isActive = b.dataset.stato === statoSelezionato;
+            b.style.background = isActive ? colori[b.dataset.stato] : 'transparent';
+            b.style.color = isActive ? 'white' : colori[b.dataset.stato];
+        });
+    });
+});
+    // Listener salva
+    var saveBtn = body.querySelector('#btn-salva-postit');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+    var noteText = document.getElementById('postit-note-input').value.trim();
+    var bookingIdClean = this.dataset.id;
+    var archived = this.dataset.archived === 'true';
+
+    if (!statoSelezionato) {
+        showBanner('Seleziona uno stato prima di salvare', 'error');
+        return;
+    }
+      makeRequest('savePostIt', {
+        bookingId: bookingIdClean,
+        stato: statoSelezionato,
+        note: noteText,
+        isArchived: archived
+    }).then(function(result) {
+        if (result.status === 'ok') {
+            showBanner('Post-it salvato!', 'success');
+            closeModal('details-modal');
+            loadInitialData(true);
+        } else {
+            showBanner('Errore: ' + result.message, 'error');
+        }
+    }).catch(function(e) {
+        showBanner('Errore salvataggio post-it', 'error');
+    });
+});
+    }
+
     el('details-modal').style.display = 'block';
 }
 
@@ -2661,8 +2831,22 @@ function renderArchivedMonthlyCalendar() {
                 let icon = ICONS[event.evento] || '';
                 // ✅ NUOVO: Tronca nomi lunghi per mantenere la struttura
                 const truncatedName = truncateEventName(event.nome);
-                eventBar.innerHTML = `<span>${event.ora} ${icon} ${truncatedName}</span>`;
-                eventBar.title = `(ARCHIVIATO) ${getEventName(event.evento)}\n👤 ${event.nome}`;
+                // Indicatore post-it
+                var postitIndicator = '';
+                if (event.postit) {
+                    var postitParts = event.postit.toString().split('|');
+                    var postitStato = postitParts[0];
+                    var coloriPostit = { 
+                        'svolto': '#00b894', 
+                        'non_svolto': '#e74c3c', 
+                        'parziale': '#f39c12' 
+                    };
+                    var colorePostit = coloriPostit[postitStato] || '#fdcb6e';
+                    postitIndicator = `<span style="position:absolute; top:2px; right:2px; width:8px; height:8px; border-radius:50%; background:${colorePostit}; display:inline-block;"></span>`;
+                }
+
+                eventBar.innerHTML = `<span>${event.ora} ${icon} ${truncatedName}</span>${postitIndicator}`;
+                eventBar.title = `(ARCHIVIATO) ${getEventName(event.evento)}\n👤 ${event.nome}${event.postit ? '\n📝 ' + (event.postit.toString().split('|')[0]) : ''}`;
                 eventBar.onclick = (e) => {
                     e.stopPropagation();
                     showDetailsModal(event);
@@ -2686,35 +2870,38 @@ function renderArchivedMonthlyCalendar() {
     }
 }
 
-async function submitAdminBooking(event, isRetry = false) {
+async function submitAdminBooking(event, isRetry) {
+    if (isRetry === undefined) isRetry = false;
     if (event) event.preventDefault();
-    const btn = document.getElementById('btn-admin-submit-booking');
-    const form = document.getElementById('admin-new-booking');
+    var btn = document.getElementById('btn-admin-submit-booking');
+    var form = document.getElementById('admin-new-booking');
     if (!form.checkValidity()) {
-        showBanner('❌ Compila tutti i campi obbligatori', 'error');
+        showBanner('Compila tutti i campi obbligatori', 'error');
         return;
     }
 
-    const evento = document.getElementById('adminEvento').value;
-    const isSpecialEvent = evento === 'compleanno' || evento === 'eventi';
+    var evento = document.getElementById('adminEvento').value;
+    var isSpecialEvent = evento === 'compleanno' || evento === 'eventi';
 
-    let finalNote = '';
+    var finalNote = '';
     if (isSpecialEvent) {
-        const personCount = document.getElementById('admin-person-count').value;
-        const musicOption = document.querySelector('input[name="admin-music-option"]:checked').value;
-        const tablesOption = document.querySelector('input[name="admin-tables-option"]:checked').value;
-        const otherRequests = document.getElementById('admin-other-requests').value.trim();
-        finalNote = `Dettagli Evento:\n- Numero Persone: ${personCount}\n- Impianto Musicale: ${musicOption}\n- Tavoli e Sedie: ${tablesOption}`;
+        var personCount = document.getElementById('admin-person-count').value;
+        var musicOption = document.querySelector('input[name="admin-music-option"]:checked').value;
+        var tablesOption = document.querySelector('input[name="admin-tables-option"]:checked').value;
+        var otherRequests = document.getElementById('admin-other-requests').value.trim();
+        finalNote = 'Dettagli Evento:\n- Numero Persone: ' + personCount +
+                    '\n- Impianto Musicale: ' + musicOption +
+                    '\n- Tavoli e Sedie: ' + tablesOption;
         if (otherRequests) {
-            finalNote += `\n- Altre Richieste: ${otherRequests}`;
+            finalNote += '\n- Altre Richieste: ' + otherRequests;
         }
     } else {
         finalNote = document.getElementById('adminNote').value.trim();
     }
 
-    const confirmCheckbox = document.getElementById('adminConfermaEvento');
+    var confirmCheckbox = document.getElementById('adminConfermaEvento');
     if (isSpecialEvent && confirmCheckbox && !confirmCheckbox.checked) {
-        showBanner('❌ Devi confermare l\'evento speciale prima di procedere', 'error');
+        showBanner('Devi confermare l\'evento speciale prima di procedere', 'error');
         return;
     }
 
@@ -2723,33 +2910,69 @@ async function submitAdminBooking(event, isRetry = false) {
         btn.disabled = true;
     }
 
-    let campoValue = isSpecialEvent ? 'entrambi' : evento;
-    let emailValue;
-    const emailField = document.getElementById('adminEmail');
+    var adminData = document.getElementById('adminData').value;
+    var adminOra = document.getElementById('adminOra').value;
+
+    if (adminData && adminOra) {
+        var bookingDateTime = new Date(adminData + 'T' + adminOra + ':00');
+        var now = new Date();
+        if (bookingDateTime < now) {
+            showBanner('Non e possibile prenotare per una data/ora gia passata. Seleziona una data e ora future.', 'error');
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            return;
+        }
+    }
+
+    // Salva dati in variabili globali temporanee per uso in _submitAdminBookingConSpazio
+    window._adminBookingTemp = {
+        evento: evento,
+        isSpecialEvent: isSpecialEvent,
+        finalNote: finalNote,
+        adminData: adminData,
+        adminOra: adminOra,
+        isRetry: isRetry
+    };
+
+    if (isSpecialEvent) {
+        // Prima rilascia il bottone, poi mostra modal
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        showSpazioModal(function(spazio) {
+            _submitAdminBookingConSpazio(spazio);
+        });
+        return;
+    }
+
+    _submitAdminBookingConSpazio(evento);
+}
+
+async function _submitAdminBookingConSpazio(spazio) {
+    var btn = document.getElementById('btn-admin-submit-booking');
+    var form = document.getElementById('admin-new-booking');
+
+    var temp = window._adminBookingTemp || {};
+    var evento = temp.evento || document.getElementById('adminEvento').value;
+    var isSpecialEvent = temp.isSpecialEvent !== undefined ? temp.isSpecialEvent : (evento === 'compleanno' || evento === 'eventi');
+    var finalNote = temp.finalNote || '';
+    var adminData = temp.adminData || document.getElementById('adminData').value;
+    var adminOra = temp.adminOra || document.getElementById('adminOra').value;
+
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    var campoValue = isSpecialEvent ? spazio : evento;
+
+    var emailValue;
+    var emailField = document.getElementById('adminEmail');
     if (isSpecialEvent && emailField && emailField.value.trim()) {
         emailValue = emailField.value.trim();
     } else {
         emailValue = 'prenotazionecampoanspi@gmail.com';
     }
 
-    // ✅ NUOVO: Controllo per date/ore passate
-    const adminData = document.getElementById('adminData').value;
-    const adminOra = document.getElementById('adminOra').value;
-    
-    if (adminData && adminOra) {
-        const bookingDateTime = new Date(`${adminData}T${adminOra}:00`);
-        const now = new Date();
-        
-        if (bookingDateTime < now) {
-            showBanner('❌ Non è possibile prenotare per una data/ora già passata. Seleziona una data e ora future.', 'error');
-            btn.classList.remove('loading');
-            btn.disabled = false;
-            return;
-        }
-    }
-    
     currentBooking = {
-        id: `ANSPI-${generateShortId()}`,
+        id: 'ANSPI-' + generateShortId(),
         nome: document.getElementById('adminNome').value.trim(),
         email: emailValue,
         telefono: document.getElementById('adminTelefono').value.trim(),
@@ -2757,11 +2980,11 @@ async function submitAdminBooking(event, isRetry = false) {
         campo: campoValue,
         data: adminData,
         ora: adminOra,
-
         note: finalNote,
         ricorrente: !isSpecialEvent && document.getElementById('adminRicorrente').checked,
         adminActionBy: currentAdminEmail
     };
+
     // CHECK RICORRENZE INVISIBILI PER ADMIN
     if (evento === 'calcetto' || evento === 'pallavolo') {
         var blockedAdmin = await checkAndWarnInvisibleRecurrence(
@@ -2776,14 +2999,14 @@ async function submitAdminBooking(event, isRetry = false) {
             return;
         }
     }
-    // FINE CHECK RICORRENZE INVISIBILI
-    // ✅ Pre-check conflitto basato su durata per admin
+
+    // Pre-check conflitto basato su durata per admin
     try {
-        const dayEvents = getEventsForDate(adminData);
-        function toDate(ds, ts){ return new Date(`${ds}T${ts}:00`); }
-        const reqStart = toDate(adminData, adminOra);
-        const reqEnd = new Date(reqStart.getTime() + (DURATIONS[evento] || 90) * 60000);
-        const overlaps = dayEvents.some(function(e){
+        var dayEvents = getEventsForDate(adminData);
+        function toDate(ds, ts) { return new Date(ds + 'T' + ts + ':00'); }
+        var reqStart = toDate(adminData, adminOra);
+        var reqEnd = new Date(reqStart.getTime() + (DURATIONS[evento] || 90) * 60000);
+        var overlaps = dayEvents.some(function(e) {
             var typeMatch = (e.evento === evento) || (e.campo === evento) || (e.campo === 'entrambi');
             if (!typeMatch || !e.ora) return false;
             var evStart = toDate(adminData, e.ora);
@@ -2791,17 +3014,44 @@ async function submitAdminBooking(event, isRetry = false) {
             return (reqStart < evEnd) && (evStart < reqEnd);
         });
         if (overlaps) {
-            showBanner('⚠️ Conflitto rilevato: propongo alternative...', 'info', 4000);
-            await finalConfirmBooking('admin');
-            btn.classList.remove('loading');
-            btn.disabled = false;
-            return;
+            var isMaster = currentAdminEmail && currentAdminEmail.toLowerCase() === 'prenotazionecampoanspi@gmail.com';
+            if (isMaster) {
+                showGenericConfirmModal(
+                    'Conflitto Rilevato',
+                    'Esiste gia una prenotazione in questo orario. Vuoi procedere comunque?',
+                    async function() {
+                        try {
+                            var bookingWithForce = Object.assign({}, currentBooking, { forceBooking: true });
+                            var result = await makeRequest('createBooking', bookingWithForce);
+                            if (result.status === 'ok' || result.status === 'updated') {
+                                form.reset();
+                                toggleAdminCampoSelection();
+                                showBanner('Prenotazione creata con conflitto forzato!', 'success');
+                                await loadInitialData(true);
+                            } else {
+                                showBanner('Errore: ' + result.message, 'error');
+                            }
+                        } catch(e) {
+                            showBanner('Errore di comunicazione', 'error');
+                        } finally {
+                            btn.classList.remove('loading');
+                            btn.disabled = false;
+                        }
+                    }
+                );
+                return;
+            } else {
+                showBanner('Conflitto rilevato: propongo alternative...', 'info', 4000);
+                await finalConfirmBooking('admin');
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                return;
+            }
         }
     } catch (preErr) { /* empty */ }
-    // (Rimosso) allegare clientVersion al booking
+
     try {
-        const result = await makeRequest('createBooking', currentBooking);
-        // (Rimosso) gestione version_mismatch lato server
+        var result = await makeRequest('createBooking', currentBooking);
         if (result.status === 'exclusive_conflict') {
             showExclusiveConflictModal(result);
         } else if (result.status === 'conflict_suggestions') {
@@ -2809,37 +3059,39 @@ async function submitAdminBooking(event, isRetry = false) {
         } else if (result.status === 'ok') {
             form.reset();
             toggleAdminCampoSelection();
-            showBanner(`✅ Prenotazione ${currentBooking.ricorrente ? 'ricorrente ' : ''}creata!`, 'success');
+            showBanner('Prenotazione ' + (currentBooking.ricorrente ? 'ricorrente ' : '') + 'creata!', 'success');
             await loadInitialData(true);
         } else if (result.status === 'updated') {
             form.reset();
             toggleAdminCampoSelection();
-            showBanner('✅ Prenotazione aggiornata con successo!', 'success');
+            showBanner('Prenotazione aggiornata con successo!', 'success');
             await loadInitialData(true);
         } else if (result.status === 'duplicate') {
-            showBanner('❌ Esiste già una prenotazione per questa data, ora e campo.', 'error');
+            showBanner('Esiste gia una prenotazione per questa data, ora e campo.', 'error');
         } else if (result.status === 'error') {
-            showBanner(`❌ Errore: ${result.message}`, 'error');
+            showBanner('Errore: ' + result.message, 'error');
         } else {
-            showBanner(`⚠️ Risposta inattesa dal server: ${result.status}`, 'error');
+            showBanner('Risposta inattesa dal server: ' + result.status, 'error');
         }
     } catch (error) {
-        console.error("Creazione prenotazione admin fallita:", error);
+        console.error('Creazione prenotazione admin fallita:', error);
         try {
-            const verify = await makeRequest('getBookingsForCalendar');
+            var verify = await makeRequest('getBookingsForCalendar');
             if (verify.status === 'ok') {
-                const exists = (verify.data?.bookings || []).some(b => String(b.id).trim() === String(currentBooking.id).trim());
+                var exists = (verify.data && verify.data.bookings || []).some(function(b) {
+                    return String(b.id).trim() === String(currentBooking.id).trim();
+                });
                 if (exists) {
-                    showBanner('✅ Prenotazione registrata, ma la connessione ha dato errore. Aggiorna se non la vedi.', 'success');
+                    showBanner('Prenotazione registrata, ma la connessione ha dato errore. Aggiorna se non la vedi.', 'success');
                     await loadInitialData(true);
                 } else {
-                    showBanner('❌ Errore di comunicazione con il server', 'error');
+                    showBanner('Errore di comunicazione con il server', 'error');
                 }
             } else {
-                showBanner('❌ Errore di comunicazione con il server', 'error');
+                showBanner('Errore di comunicazione con il server', 'error');
             }
         } catch (verifyError) {
-            showBanner('❌ Errore di comunicazione con il server', 'error');
+            showBanner('Errore di comunicazione con il server', 'error');
         }
     } finally {
         btn.classList.remove('loading');
@@ -4669,72 +4921,82 @@ function isDatePast(dateString) {
  */
 function checkDayAvailabilityFromEvents(eventsForDay, eventType, dateString) {
     try {
-        // ✅ NUOVO: Controllo per date/ore passate
         if (dateString && isDatePast(dateString)) {
             return { status: 'past', eventsCount: eventsForDay.length };
         }
-        
-        // ✅ MODIFICATO: Controllo per giorni di chiusura (domenica e festivi)
-        // Prima controlla se ci sono eventi registrati dagli admin
+
         if (eventsForDay.length > 0) {
-            // Se ci sono eventi, mostra quelli anche se è domenica/festivo
-            const isSpecialEvent = eventType === 'compleanno' || eventType === 'eventi';
-            
-            // Eventi speciali: controllano tutti gli eventi esistenti
+            var isSpecialEvent = eventType === 'compleanno' || eventType === 'eventi';
+
             if (isSpecialEvent) {
-                return { status: 'occupied', eventsCount: eventsForDay.length };
-            }
-            
-            // Eventi normali: logica esistente
-            const exclusiveEvents = eventsForDay.filter(event => 
-                event.evento === 'compleanno' || event.evento === 'eventi'
-            );
-            
+    // Blocca solo se c'è un altro evento esclusivo che occupa tutto
+    var blockingEvents = eventsForDay.filter(function(event) {
+        if (event.campo === 'salone_melone') return false;
+        if (event.evento === 'compleanno' || event.evento === 'eventi') return true;
+        if (event.campo === 'entrambi' || event.campo === 'tutto') return true;
+        return false;
+    });
+    if (blockingEvents.length > 0) {
+        return { status: 'occupied', eventsCount: eventsForDay.length };
+    }
+    return { status: 'special', eventsCount: eventsForDay.length };
+}
+
+            // Eventi normali: controlla solo eventi esclusivi che occupano il campo richiesto
+            var exclusiveEvents = eventsForDay.filter(function(event) {
+                if (event.evento !== 'compleanno' && event.evento !== 'eventi') return false;
+                // salone_melone non occupa i campi sportivi
+                if (event.campo === 'salone_melone') return false;
+                // calcetto_salone occupa solo calcetto
+                if (event.campo === 'calcetto_salone') return eventType === 'calcetto';
+                // pallavolo_salone occupa solo pallavolo
+                if (event.campo === 'pallavolo_salone') return eventType === 'pallavolo';
+                // tutto e entrambi occupano entrambi i campi
+                if (event.campo === 'tutto' || event.campo === 'entrambi') return true;
+                // campo specifico
+                return event.campo === eventType;
+            });
+
             if (exclusiveEvents.length > 0) {
                 return { status: 'occupied', eventsCount: eventsForDay.length };
             }
-            
-            const conflictingEvents = eventsForDay.filter(event => 
-                event.campo === eventType || event.campo === 'entrambi'
-            );
-            
+
+            var conflictingEvents = eventsForDay.filter(function(event) {
+                if (event.campo === 'salone_melone') return false;
+                if (event.campo === 'calcetto_salone') return eventType === 'calcetto';
+                if (event.campo === 'pallavolo_salone') return eventType === 'pallavolo';
+                if (event.campo === 'tutto') return true;
+                return event.campo === eventType || event.campo === 'entrambi';
+            });
+
             if (conflictingEvents.length === 0) {
                 return { status: 'available', eventsCount: eventsForDay.length };
             } else {
                 return { status: 'partial', eventsCount: eventsForDay.length };
             }
         }
-        
-        // Se non ci sono eventi, controlla se è un giorno di chiusura
+
         if (dateString) {
-            const checkDate = new Date(dateString);
-            const year = checkDate.getFullYear();
-            
-            // Controllo domenica
+            var checkDate = new Date(dateString);
             if (checkDate.getDay() === 0) {
                 return { status: 'closed', eventsCount: 0 };
             }
-            
-            // Controllo festività italiane
-            const dateStringFormatted = `${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
-            const italianHolidays = [
-                '01-01', '01-06', '04-25', '05-01', '06-02', '08-15', '11-01', '12-08', '12-25', '12-26'
-            ];
-            
-            if (italianHolidays.includes(dateStringFormatted)) {
+            var mm = String(checkDate.getMonth() + 1).padStart(2, '0');
+            var dd = String(checkDate.getDate()).padStart(2, '0');
+            var dateStringFormatted = mm + '-' + dd;
+            var italianHolidays = ['01-01', '01-06', '04-25', '05-01', '06-02', '08-15', '11-01', '12-08', '12-25', '12-26'];
+            if (italianHolidays.indexOf(dateStringFormatted) !== -1) {
                 return { status: 'closed', eventsCount: 0 };
             }
         }
-        
-        // Se arriviamo qui, non ci sono eventi e non è un giorno di chiusura
-        // Controlla se è un evento speciale per determinare la disponibilità
-        const isSpecialEvent = eventType === 'compleanno' || eventType === 'eventi';
+
+        var isSpecialEvent = eventType === 'compleanno' || eventType === 'eventi';
         if (isSpecialEvent) {
             return { status: 'special', eventsCount: 0 };
         }
-        
+
         return { status: 'available', eventsCount: 0 };
-        
+
     } catch (error) {
         console.error('Errore checkDayAvailabilityFromEvents:', error);
         return { status: 'available', eventsCount: 0 };
@@ -4775,143 +5037,111 @@ function getEventsForDate(dateString) {
 }
 
 function openDayBookingModal(dateString) {
-    const eventsForDay = getEventsForDate(dateString);
-    
-    const isSpecialEvent = selectedEvent === 'compleanno' || selectedEvent === 'eventi';
-    
-    const modal = el('details-modal');
+    var isSpecialEvent = selectedEvent === 'compleanno' || selectedEvent === 'eventi';
+
+    if (isSpecialEvent) {
+        showSpazioModal(function(spazio) {
+            _openDayBookingModalConSpazio(dateString, spazio);
+        });
+        return;
+    }
+
+    _openDayBookingModalConSpazio(dateString, selectedEvent);
+}
+
+function _openDayBookingModalConSpazio(dateString, spazio) {
+    var eventsForDay = getEventsForDate(dateString);
+    var isSpecialEvent = selectedEvent === 'compleanno' || selectedEvent === 'eventi';
+    var modal = el('details-modal');
+
     if (isSpecialEvent) {
         modal.classList.add('special-event-modal');
     } else {
         modal.classList.remove('special-event-modal');
     }
-    
-    el('details-modal-title').innerHTML = 
-        `📅 ${formatDate(dateString)} - Prenota ${getEventName(selectedEvent)}`;
-    
-    const body = el('details-modal-body');
-    
-    // Eventi esistenti (se presenti)
-    let existingEventsHtml = '';
+
+    el('details-modal-title').innerHTML = '&#x1F4C5; ' + formatDate(dateString) + ' - Prenota ' + getEventName(selectedEvent);
+
+    var body = el('details-modal-body');
+
+    var existingEventsHtml = '';
     if (eventsForDay.length > 0) {
-        existingEventsHtml = `
-            <div class="existing-events">
-                <h4>📋 Eventi già prenotati:</h4>
-                ${eventsForDay.map(event => `
-                    <div class="event-summary" style="background: ${getEventColor(event.evento)}; padding: 10px; margin: 5px 0; border-radius: 8px; color: white;">
-                        🕐 ${event.ora} - ${getEventName(event.evento)} 
-                                                 <small>(${(event.ricorrente === true || event.ricorrente === 'TRUE' || event.ricorrente === 'true' || event.ricorrente === 'sì') && !event.id.includes('-V') ? `${event.nome} 🔄` : event.nome})</small>
-                    </div>
-                `).join('')}
-            </div>
-            <hr style="margin: 20px 0; border: 1px solid #eee;">
-        `;
+        var eventsListHtml = '';
+        eventsForDay.forEach(function(event) {
+            var isRecurring = (event.ricorrente === true || event.ricorrente === 'TRUE' || event.ricorrente === 'true' || event.ricorrente === 'si') && !event.id.includes('-V');
+            var nomeTxt = isRecurring ? (event.nome + ' &#x1F504;') : event.nome;
+            var campoInfo = event.campo ? ' <span style="opacity:0.85; font-size:0.85rem;">• ' + getCampoName(event.campo) + '</span>' : '';
+eventsListHtml += '<div class="event-summary" style="background: ' + getEventColor(event.evento) + '; padding: 10px; margin: 5px 0; border-radius: 8px; color: white;">' +
+    '&#x1F550; ' + event.ora + ' - ' + getEventName(event.evento) +
+    ' <small>(' + nomeTxt + ')</small>' + campoInfo +
+    '</div>';
+        });
+        existingEventsHtml = '<div class="existing-events">' +
+            '<h4>&#x1F4CB; Eventi gia prenotati:</h4>' +
+            eventsListHtml +
+            '</div><hr style="margin: 20px 0; border: 1px solid #eee;">';
     }
-    
-    // Form base per tutti
-    let formHtml = `
-        <div class="inline-booking-form">
-            <h4>➕ Nuova Prenotazione ${getEventName(selectedEvent)}</h4>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>👤 Nome e Cognome:</label>
-                    <input type="text" id="modalNome" required>
-                </div>
-                <div class="form-group">
-                    <label id="modalEmailLabel">📧 Email:</label>
-                    <input type="email" id="modalEmail" required>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>📞 Telefono:</label>
-                    <input type="tel" id="modalTelefono" required>
-                </div>
-                <div class="form-group">
-                    <label>🕐 Ora:</label>
-                    <input type="time" id="modalOra" required>
-                </div>
-            </div>
-    `;
-    
-    // Campi specifici per eventi speciali
+
+    var formHtml = '<div class="inline-booking-form">' +
+        '<h4>&#x2795; Nuova Prenotazione ' + getEventName(selectedEvent) + '</h4>' +
+        '<div class="form-row">' +
+        '<div class="form-group"><label>&#x1F464; Nome e Cognome:</label><input type="text" id="modalNome" required></div>' +
+        '<div class="form-group"><label id="modalEmailLabel">&#x1F4E7; Email:</label><input type="email" id="modalEmail" required></div>' +
+        '</div>' +
+        '<div class="form-row">' +
+        '<div class="form-group"><label>&#x1F4DE; Telefono:</label><input type="tel" id="modalTelefono" required></div>' +
+        '<div class="form-group"><label>&#x1F550; Ora:</label><input type="time" id="modalOra" required></div>' +
+        '</div>';
+
     if (isSpecialEvent) {
-        formHtml += `
-            </div>
-            
-            <div class="special-event-form">
-                <h4>🎉 Dettagli Evento Speciale</h4>
-                
-                <div class="approval-notice">
-                    <strong>⏳ Richiede Approvazione</strong><br>
-                    La tua richiesta sarà valutata dall'amministratore entro 24 ore
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>👤 Numero persone:</label>
-                        <input type="number" id="modalPersonCount" min="1" placeholder="Es. 25" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>🎶 Impianto musicale necessario?</label>
-                    <div class="switch-field-inline">
-                        <input type="radio" id="modalMusicYes" name="modalMusic" value="Sì" />
-                        <label for="modalMusicYes">Sì</label>
-                        <input type="radio" id="modalMusicNo" name="modalMusic" value="No" checked />
-                        <label for="modalMusicNo">No</label>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>🪑 Tavoli e sedie necessari?</label>
-                    <div class="switch-field-inline">
-                        <input type="radio" id="modalTablesYes" name="modalTables" value="Sì" />
-                        <label for="modalTablesYes">Sì</label>
-                        <input type="radio" id="modalTablesNo" name="modalTables" value="No" checked />
-                        <label for="modalTablesNo">No</label>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>➕ Altre richieste particolari:</label>
-                    <textarea id="modalOtherRequests" rows="2" placeholder="Specificare qui eventuali esigenze particolari..."></textarea>
-                </div>
-            </div>
-            
-            <div class="form-group" style="margin-top: 15px;">
-        `;
-    } else {
-        formHtml += `
-            <div class="form-group">
-        `;
+        formHtml += '<div class="special-event-form">' +
+            '<h4>&#x1F389; Dettagli Evento Speciale</h4>' +
+            '<div class="approval-notice">' +
+            '<strong>&#x23F3; Richiede Approvazione</strong><br>' +
+            'La tua richiesta sara valutata dall\'amministratore entro 24 ore' +
+            '</div>' +
+            '<div class="form-row"><div class="form-group">' +
+            '<label>&#x1F464; Numero persone:</label>' +
+            '<input type="number" id="modalPersonCount" min="1" placeholder="Es. 25" required>' +
+            '</div></div>' +
+            '<div class="form-group"><label>&#x1F3B6; Impianto musicale necessario?</label>' +
+            '<div class="switch-field-inline">' +
+            '<input type="radio" id="modalMusicYes" name="modalMusic" value="Si" />' +
+            '<label for="modalMusicYes">Si</label>' +
+            '<input type="radio" id="modalMusicNo" name="modalMusic" value="No" checked />' +
+            '<label for="modalMusicNo">No</label>' +
+            '</div></div>' +
+            '<div class="form-group"><label>&#x1FA91; Tavoli e sedie necessari?</label>' +
+            '<div class="switch-field-inline">' +
+            '<input type="radio" id="modalTablesYes" name="modalTables" value="Si" />' +
+            '<label for="modalTablesYes">Si</label>' +
+            '<input type="radio" id="modalTablesNo" name="modalTables" value="No" checked />' +
+            '<label for="modalTablesNo">No</label>' +
+            '</div></div>' +
+            '<div class="form-group"><label>&#x2795; Altre richieste particolari:</label>' +
+            '<textarea id="modalOtherRequests" rows="2" placeholder="Specificare qui eventuali esigenze particolari..."></textarea>' +
+            '</div></div>';
     }
-    
-    // Campo note (per tutti)
-    formHtml += `
-                <label>📝 Note (opzionali):</label>
-                <textarea id="modalNote" rows="2" placeholder="Eventuali richieste particolari..."></textarea>
-            </div>
-            
-            <button type="button" class="btn" id="btn-confirm-modal-booking">
-                ✅ ${isSpecialEvent ? 'Richiedi' : 'Prenota'} ${getEventName(selectedEvent)}
-            </button>
-        </div>
-    `;
-    
+
+    formHtml += '<div class="form-group">' +
+        '<label>&#x1F4DD; Note (opzionali):</label>' +
+        '<textarea id="modalNote" rows="2" placeholder="Eventuali richieste particolari..."></textarea>' +
+        '</div>' +
+        '<button type="button" class="btn" id="btn-confirm-modal-booking">' +
+        '&#x2705; ' + (isSpecialEvent ? 'Richiedi' : 'Prenota') + ' ' + getEventName(selectedEvent) +
+        '</button>' +
+        '</div>';
+
     body.innerHTML = existingEventsHtml + formHtml;
-    
-    // Event listener per conferma
-    document.getElementById('btn-confirm-modal-booking').onclick = () => {
+
+    document.getElementById('btn-confirm-modal-booking').onclick = function() {
         confirmModalBooking(dateString);
     };
-    
+
+    // Passa lo spazio selezionato a confirmModalBooking tramite variabile globale
+    window._spazioSelezionato = spazio;
+
     modal.style.display = 'block';
-    
-    // ✅ AGGIUNTA: Aggiorna visibilità campo email per admin
     updateModalEmailFieldVisibility();
 }
 
@@ -4958,7 +5188,7 @@ function confirmModalBooking(dateString) {
     }
 
     var emailValue = (isAdminLoggedIn && currentAdminEmail) ? currentAdminEmail : email;
-    var campoValue = isSpecialEvent ? 'entrambi' : selectedEvent;
+    var campoValue = isSpecialEvent ? (window._spazioSelezionato || 'entrambi') : selectedEvent;
 
     var booking = {
         id:            'ANSPI-' + generateShortId(),
@@ -4973,7 +5203,14 @@ function confirmModalBooking(dateString) {
         ricorrente:    false,
         adminActionBy: isAdminLoggedIn && currentAdminEmail ? currentAdminEmail : undefined
     };
-
+if (isSpecialEvent) {
+    showSpazioModal(function(spazio) {
+        booking.campo = spazio;
+        closeModal('details-modal');
+        _proceedConfirmModalBooking(booking, dateString, ora);
+    });
+    return;
+}
     closeModal('details-modal');
 
     // CHECK RICORRENZE INVISIBILI (solo utente, calcetto/pallavolo)
@@ -6055,6 +6292,253 @@ function applyConfiguration(config) {
         console.log('✅ Configurazione applicata');
     } catch(e) {
         console.warn('⚠️ Errore applicazione configurazione:', e.message);
+    }
+}
+// =====================================================
+// REPORT SETTIMANALE PDF
+// =====================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    var reportBtn = document.getElementById('btn-genera-report');
+    if (reportBtn) {
+        reportBtn.addEventListener('click', generaReportSettimanale);
+    }
+});
+
+function generaReportSettimanale() {
+    var weekInput = document.getElementById('reportWeekInput');
+    if (!weekInput || !weekInput.value) {
+        showBanner('Seleziona una settimana prima di generare il report', 'error');
+        return;
+    }
+
+    // Calcola inizio e fine settimana dalla stringa "YYYY-Www"
+    var parts = weekInput.value.split('-W');
+    var year = parseInt(parts[0]);
+    var week = parseInt(parts[1]);
+
+    // Calcola il lunedi della settimana selezionata
+    var monday = new Date(year, 0, 1 + (week - 1) * 7);
+    var day = monday.getDay();
+    var diff = (day <= 4) ? 1 - day : 8 - day;
+    monday.setDate(monday.getDate() + diff);
+
+    var sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    var mondayStr = monday.toISOString().split('T')[0];
+    var sundayStr = sunday.toISOString().split('T')[0];
+
+    // Filtra eventi della settimana
+    var dataSource = calendarBookings.length > 0 ? calendarBookings : bookings;
+
+    var eventiSettimana = dataSource.filter(function(b) {
+        if (!b.data) return false;
+        var dataEvento = b.data.split('T')[0];
+        return dataEvento >= mondayStr && dataEvento <= sundayStr;
+    });
+
+    // Suddividi per tipo
+    var calcetto   = eventiSettimana.filter(function(b) { return b.evento === 'calcetto'; });
+    var pallavolo  = eventiSettimana.filter(function(b) { return b.evento === 'pallavolo'; });
+    var compleanni = eventiSettimana.filter(function(b) { return b.evento === 'compleanno'; });
+    var eventi     = eventiSettimana.filter(function(b) { return b.evento === 'eventi'; });
+
+    // Genera PDF con jsPDF
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF();
+
+    var pageWidth = doc.internal.pageSize.getWidth();
+    var margin = 20;
+    var y = 20;
+
+    // Funzione helper per formattare data
+    function fmtData(str) {
+        if (!str) return '';
+        var d = new Date(str.split('T')[0] + 'T00:00:00');
+        return d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    // Funzione helper per aggiungere nuova pagina se necessario
+    function checkPage(needed) {
+        if (y + needed > 270) {
+            doc.addPage();
+            y = 20;
+        }
+    }
+
+    // Intestazione
+    doc.setFillColor(116, 185, 255);
+    doc.rect(0, 0, pageWidth, 35, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Campo Don Michele FIORE - ANSPI', pageWidth / 2, 15, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Report Settimanale Prenotazioni', pageWidth / 2, 25, { align: 'center' });
+
+    y = 45;
+
+    // Periodo
+    doc.setTextColor(50, 50, 50);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Periodo: ' + fmtData(mondayStr) + ' - ' + fmtData(sundayStr), margin, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text('Totale eventi: ' + eventiSettimana.length, margin, y + 7);
+    y += 20;
+
+    // Linea separatrice
+    doc.setDrawColor(116, 185, 255);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 10;
+
+    // Funzione per stampare una sezione
+    function stampaSezione(titolo, colore, lista) {
+        if (lista.length === 0) return;
+
+        checkPage(20);
+
+        // Titolo sezione
+        doc.setFillColor(colore[0], colore[1], colore[2]);
+        doc.rect(margin, y - 5, pageWidth - margin * 2, 10, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text(titolo + ' (' + lista.length + ')', margin + 3, y + 2);
+        y += 12;
+
+        // Intestazione tabella
+        doc.setFillColor(240, 240, 240);
+        doc.rect(margin, y - 4, pageWidth - margin * 2, 8, 'F');
+        doc.setTextColor(80, 80, 80);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Data', margin + 2, y + 1);
+        doc.text('Ora', margin + 30, y + 1);
+        doc.text('Nome', margin + 50, y + 1);
+        doc.text('Telefono', margin + 110, y + 1);
+        doc.text('Note', margin + 150, y + 1);
+        y += 10;
+
+        // Righe eventi
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+
+        lista.sort(function(a, b) {
+            return a.data.localeCompare(b.data) || a.ora.localeCompare(b.ora);
+        });
+
+        lista.forEach(function(b, idx) {
+            checkPage(8);
+
+            // Righe alternate
+            if (idx % 2 === 0) {
+                doc.setFillColor(250, 250, 250);
+                doc.rect(margin, y - 4, pageWidth - margin * 2, 7, 'F');
+            }
+
+            doc.setTextColor(50, 50, 50);
+            doc.text(fmtData(b.data), margin + 2, y);
+            doc.text(b.ora || '', margin + 30, y);
+
+            var nome = String(b.nome || '').substring(0, 30);
+            doc.text(nome, margin + 50, y);
+
+            var tel = String(b.telefono || '').substring(0, 15);
+            doc.text(tel, margin + 110, y);
+
+            var note = String(b.note || '').substring(0, 25);
+            doc.text(note, margin + 150, y);
+
+            y += 8;
+        });
+
+        y += 5;
+    }
+
+    // Stampa sezioni
+    stampaSezione('Calcetto', [52, 152, 219], calcetto);
+    stampaSezione('Pallavolo', [46, 204, 113], pallavolo);
+    stampaSezione('Compleanni', [241, 196, 15], compleanni);
+    stampaSezione('Eventi Straordinari', [231, 76, 60], eventi);
+
+    // Nessun evento
+    if (eventiSettimana.length === 0) {
+        doc.setTextColor(150, 150, 150);
+        doc.setFontSize(12);
+        doc.text('Nessun evento registrato per questa settimana.', pageWidth / 2, y + 20, { align: 'center' });
+    }
+
+    // Footer
+    var pageCount = doc.internal.getNumberOfPages();
+    for (var i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text('Generato il ' + new Date().toLocaleString('it-IT') + ' - Pagina ' + i + ' di ' + pageCount,
+            pageWidth / 2, 290, { align: 'center' });
+    }
+
+    // Download
+    var filename = 'Report_Settimana_' + weekInput.value.replace('-W', '_W') + '.pdf';
+    doc.save(filename);
+
+    showBanner('PDF generato con successo!', 'success');
+}
+// =====================================================
+// MODAL SELEZIONE SPAZIO PER EVENTI SPECIALI
+// =====================================================
+
+function showSpazioModal(onSelect) {
+    if (window._spazioSelezionato) {
+        onSelect(window._spazioSelezionato);
+        return;
+    }
+    var modal = document.getElementById('details-modal');
+    var title = document.getElementById('details-modal-title');
+    var body = document.getElementById('details-modal-body');
+
+    title.innerHTML = 'Seleziona lo Spazio';
+
+    var opzioni = [
+        { value: 'calcetto',         label: '&#x26BD; Solo Calcetto',               desc: 'Solo il campo da calcetto' },
+        { value: 'pallavolo',        label: '&#x1F3D0; Solo Pallavolo',             desc: 'Solo il campo da pallavolo' },
+        { value: 'entrambi',         label: '&#x26BD;&#x1F3D0; Entrambi i Campi',  desc: 'Calcetto e pallavolo occupati' },
+        { value: 'salone_melone',    label: '&#x1F3DB; Solo Salone Melone',         desc: 'Solo il salone, campi liberi' },
+        { value: 'calcetto_salone',  label: '&#x26BD;&#x1F3DB; Calcetto + Salone', desc: 'Campo calcetto e salone' },
+        { value: 'pallavolo_salone', label: '&#x1F3D0;&#x1F3DB; Pallavolo + Salone', desc: 'Campo pallavolo e salone' },
+        { value: 'tutto',            label: '&#x26BD;&#x1F3D0;&#x1F3DB; Tutto',    desc: 'Tutti gli spazi occupati' }
+    ];
+
+    var html = '<p style="color: #636e72; margin-bottom: 16px; font-size: 0.95rem;">Quali spazi utilizzerai per questo evento?</p>' +
+        '<div style="display: flex; flex-direction: column; gap: 10px;">';
+
+    opzioni.forEach(function(op) {
+        html += '<button onclick="selectSpazio(\'' + op.value + '\')" ' +
+            'style="background: rgba(116,185,255,0.1); border: 2px solid rgba(116,185,255,0.3); ' +
+            'border-radius: 12px; padding: 14px 16px; cursor: pointer; text-align: left; ' +
+            'transition: all 0.2s ease; font-family: inherit;">' +
+            '<div style="font-size: 1rem; font-weight: 700; color: #2d3436;">' + op.label + '</div>' +
+            '<div style="font-size: 0.8rem; color: #636e72; margin-top: 3px;">' + op.desc + '</div>' +
+            '</button>';
+    });
+
+    html += '</div>';
+    body.innerHTML = html;
+
+    window._spazioCallback = onSelect;
+    modal.style.display = 'block';
+}
+
+function selectSpazio(value) {
+    closeModal('details-modal');
+    if (typeof window._spazioCallback === 'function') {
+        window._spazioCallback(value);
+        window._spazioCallback = null;
     }
 }
 </script>
