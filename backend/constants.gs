@@ -45,7 +45,8 @@ var DURATION_MAP = {
   calcetto: 90,
   pallavolo: 120,
   compleanno: 180,
-  eventi: 180
+  eventi: 180,
+  salone_melone: 0
 };
 
 var OPENING_HOURS = {
@@ -134,4 +135,4 @@ function getCampoName(type) {
   };
   return campos[type] || type;
 }
-var APP_VERSION = '3.0';
+var APP_VERSION = '3.1';
