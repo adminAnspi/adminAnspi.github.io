@@ -265,7 +265,7 @@ function serverRequest(action, data) {
         return { status: 'ok', data: { bookings: getBookings() } };
 
       case 'createBooking':
-        var createResult = createBooking(data);
+        var createResult = createBooking(data, data.forceBooking || false);
         if (createResult.status === 'ok') invalidateAllCache();
         return createResult;
 
@@ -510,6 +510,9 @@ function serverRequest(action, data) {
         }
         case 'checkInvisibleRecurrences':
         return checkInvisibleRecurrences(data.data, data.ora, data.campo);
+
+        case 'savePostIt':
+    return savePostIt(data.bookingId, data.stato, data.note, data.isArchived);
 
       default:
         throw new Error('Azione non riconosciuta: ' + action);
@@ -772,7 +775,11 @@ function checkBookingConflicts(newBookingData, allEventsOnDate) {
 
   var isExclusiveEvent = function(evento) { return evento === 'compleanno' || evento === 'eventi'; };
   var getPhysicalFields = function(booking) {
-    if (isExclusiveEvent(booking.evento)) return ['calcetto', 'pallavolo', 'exclusive'];
+    if (booking.campo === 'salone_melone') return [];
+    if (booking.campo === 'calcetto_salone') return ['calcetto'];
+    if (booking.campo === 'pallavolo_salone') return ['pallavolo'];
+    if (booking.campo === 'tutto') return ['calcetto', 'pallavolo', 'exclusive'];
+    if (isExclusiveEvent(booking.evento) && booking.campo === 'entrambi') return ['calcetto', 'pallavolo', 'exclusive'];
     if (booking.campo === 'entrambi') return ['calcetto', 'pallavolo'];
     if (booking.campo === 'calcetto') return ['calcetto'];
     if (booking.campo === 'pallavolo') return ['pallavolo'];
@@ -793,8 +800,12 @@ function checkBookingConflicts(newBookingData, allEventsOnDate) {
     if (newBookingStart >= existingEnd || newBookingEnd <= existingStart) continue;
 
     if (isExclusiveEvent(newBookingData.evento) || isExclusiveEvent(existingEvent.evento)) {
-      return { type: 'exclusive_conflict', conflictEvent: existingEvent, message: 'Il ' + newBookingData.data.split('T')[0] + ' è già prenotato per un evento speciale.', suggestions: { before: null, after: null } };
-    }
+    var newFields = getPhysicalFields(newBookingData);
+    var existFields = getPhysicalFields(existingEvent);
+    var hasOverlap = newFields.some(function(f) { return existFields.includes(f); });
+    if (!hasOverlap) continue;
+    return { type: 'exclusive_conflict', conflictEvent: existingEvent, message: 'Il ' + newBookingData.data.split('T')[0] + ' è già prenotato per un evento speciale.', suggestions: { before: null, after: null } };
+}
 
     var existingBookingFields = getPhysicalFields(existingEvent);
     if (newBookingFields.some(function(field) { return existingBookingFields.includes(field); })) {
@@ -816,7 +827,11 @@ function generateTimeSuggestions(newBooking, allEventsOnDate, conflictEvent) {
 
   var isExclusiveEvent = function(evento) { return evento === 'compleanno' || evento === 'eventi'; };
   var getPhysicalFields = function(booking) {
-    if (isExclusiveEvent(booking.evento)) return ['calcetto', 'pallavolo', 'exclusive'];
+    if (booking.campo === 'salone_melone') return [];
+    if (booking.campo === 'calcetto_salone') return ['calcetto'];
+    if (booking.campo === 'pallavolo_salone') return ['pallavolo'];
+    if (booking.campo === 'tutto') return ['calcetto', 'pallavolo', 'exclusive'];
+    if (isExclusiveEvent(booking.evento) && booking.campo === 'entrambi') return ['calcetto', 'pallavolo', 'exclusive'];
     if (booking.campo === 'entrambi') return ['calcetto', 'pallavolo'];
     if (booking.campo === 'calcetto') return ['calcetto'];
     if (booking.campo === 'pallavolo') return ['pallavolo'];
@@ -862,7 +877,7 @@ function generateTimeSuggestions(newBooking, allEventsOnDate, conflictEvent) {
 // =====================
 // CREAZIONE PRENOTAZIONI
 // =====================
-function createBooking(bookingData) {
+function createBooking(bookingData, forceBooking) {
   console.log("🔍 createBooking chiamata con:", JSON.stringify(bookingData, null, 2));
 
   if (!bookingData) {
@@ -920,22 +935,26 @@ function createBooking(bookingData) {
 
     var conflict = checkBookingConflicts(newBookingForCheck, eventsOnDate);
     if (conflict) {
-      var conflictEvent = conflict.conflictEvent;
-      var baseResponse = {
-        status: 'conflict_suggestions',
-        conflictDetails: {
-          nome: conflictEvent && conflictEvent.nome,
-          evento: conflictEvent && conflictEvent.evento,
-          campo: conflictEvent && conflictEvent.campo,
-          ora: conflictEvent && conflictEvent.ora
-        },
-        suggestions: { before: null, after: null }
-      };
-      if (conflict.type === 'exclusive_conflict') {
-        return Object.assign({}, baseResponse, { message: conflict.message || 'Data occupata da evento speciale', suggestions: conflict.suggestions || baseResponse.suggestions });
+      if (forceBooking && conflict.type === 'exclusive_conflict') {
+        debugLog('Force booking: conflitto esclusivo ignorato per ' + (bookingData.id || ''));
       } else {
-        var timeSuggestions = generateTimeSuggestions(newBookingForCheck, eventsOnDate, conflictEvent);
-        return Object.assign({}, baseResponse, { message: 'Campo selezionato occupato per questo orario', suggestions: timeSuggestions || baseResponse.suggestions });
+        var conflictEvent = conflict.conflictEvent;
+        var baseResponse = {
+          status: 'conflict_suggestions',
+          conflictDetails: {
+            nome: conflictEvent && conflictEvent.nome,
+            evento: conflictEvent && conflictEvent.evento,
+            campo: conflictEvent && conflictEvent.campo,
+            ora: conflictEvent && conflictEvent.ora
+          },
+          suggestions: { before: null, after: null }
+        };
+        if (conflict.type === 'exclusive_conflict') {
+          return Object.assign({}, baseResponse, { message: conflict.message || 'Data occupata da evento speciale', suggestions: conflict.suggestions || baseResponse.suggestions });
+        } else {
+          var timeSuggestions = generateTimeSuggestions(newBookingForCheck, eventsOnDate, conflictEvent);
+          return Object.assign({}, baseResponse, { message: 'Campo selezionato occupato per questo orario', suggestions: timeSuggestions || baseResponse.suggestions });
+        }
       }
     }
 
