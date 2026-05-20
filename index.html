@@ -3,295 +3,1607 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Campo Don Michele FIORE</title>
+       
+    <!-- FAVICON PERSONALIZZATO CAMPO DON MICHELE FIORE -->
+    <link rel="icon" type="image/jpeg" href="https://i.imgur.com/MIoHBFU.jpeg">
+    <link rel="shortcut icon" type="image/jpeg" href="https://i.imgur.com/MIoHBFU.jpeg">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/MIoHBFU.jpeg">
+    <meta name="theme-color" content="#74b9ff">  
+     
+    <!-- Icona schermata home Android/Chrome -->
+<link rel="manifest" href="data:application/json,{
+  &quot;name&quot;: &quot;Campo Don Michele FIORE&quot;,
+  &quot;short_name&quot;: &quot;Campo ANSPI&quot;,
+  &quot;icons&quot;: [{
+    &quot;src&quot;: &quot;https://i.imgur.com/MIoHBFU.jpeg&quot;,
+    &quot;sizes&quot;: &quot;192x192&quot;,
+    &quot;type&quot;: &quot;image/jpeg&quot;
+  }],
+  &quot;start_url&quot;: &quot;.&quot;,
+  &quot;display&quot;: &quot;standalone&quot;,
+  &quot;background_color&quot;: &quot;#74b9ff&quot;,
+  &quot;theme_color&quot;: &quot;#74b9ff&quot;
+}">
 
-    <link rel="manifest" href="manifest.json">
-
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Campo ANSPI">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#74b9ff">
-
+<!-- Meta tag aggiuntivi -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Campo ANSPI">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+     
+  <!-- FILTRO ERRORI ESTENSIONI BROWSER -->
+<script>
+(function() {
+    var originalError = console.error;
+    console.error = function() {
+        var args = Array.prototype.slice.call(arguments);
+        if (args[0] && typeof args[0] === 'string') {
+            if (args[0].includes('message port') || 
+                args[0].includes('Extension context') ||
+                args[0].includes('Unchecked runtime.lastError')) {
+                return;
+            }
+        }
+        originalError.apply(console, args);
+    };
+    window.addEventListener('error', function(event) {
+        if (event.message && event.message.includes('message port')) {
+            event.preventDefault();
+        }
+    });
+})();
+</script>
+    
+    <!-- Preload critici per mobile -->
+    <link rel="preload" href="https://i.imgur.com/0Tl9Jv9.png" as="image">
+    <link rel="preload" href="https://i.imgur.com/rBbM8pH.jpeg" as="image">
+    
+    <!-- CSS critico inline per mobile -->
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        html, body {
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #a8e6cf 0%, #7fcdcd 30%, #74b9ff 60%, #81ecec 100%);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 16px; 
+        }
+        
+        .header { 
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%); 
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            text-align: center; 
+            padding: 40px 24px; 
+            border-radius: 24px; 
+            margin-bottom: 24px; 
+            box-shadow: 0 12px 40px rgba(116, 185, 255, 0.12);
+        }
+        
+        .title { 
+            font-size: clamp(1.8rem, 4vw, 2.8rem); 
+            font-weight: 700; 
+            margin-bottom: 12px; 
+            background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            background-clip: text; 
+        }
+        
+        .subtitle { 
+            font-size: clamp(1rem, 2.5vw, 1.3rem); 
+            font-weight: 500; 
+            color: #636e72; 
+            margin-top: 8px;
+        }
+        
+        .mobile-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden;
-        }
-
-        body {
-            font-family: 'Nunito', 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #a8e6cf 0%, #7fcdcd 30%, #74b9ff 60%, #81ecec 100%);
-        }
-
-        /* ===== SPLASH ===== */
-        #splash {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
             background: linear-gradient(135deg, #a8e6cf 0%, #7fcdcd 30%, #74b9ff 60%, #81ecec 100%);
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 9999;
-            transition: opacity 0.5s ease;
-            padding: 20px;
+            transition: opacity 0.3s ease;
         }
-
-        #splash.hidden {
+        
+        .mobile-loading.hidden {
             opacity: 0;
             pointer-events: none;
         }
-
-        .splash-card {
-            background: white;
-            border-radius: 24px;
-            padding: 40px 32px;
-            max-width: 420px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(116, 185, 255, 0.25);
-            animation: slideUp 0.6s ease-out;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .splash-logo {
-            width: 110px;
-            height: 110px;
-            object-fit: contain;
-            margin-bottom: 20px;
-        }
-
-        .splash-title {
-            font-size: 1.6rem;
-            font-weight: 800;
-            background: linear-gradient(45deg, #0984e3, #74b9ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 6px;
-        }
-
-        .splash-subtitle {
-            color: #636e72;
-            font-size: 0.9rem;
-            margin-bottom: 28px;
-        }
-
-        #btn-install {
-            display: none;
-            background: linear-gradient(135deg, #00b894, #55efc4);
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            margin-bottom: 12px;
-            box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4);
-        }
-
-        #btn-enter {
-            background: linear-gradient(135deg, #74b9ff, #0984e3);
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            box-shadow: 0 8px 25px rgba(116, 185, 255, 0.4);
-        }
-
-        #ios-hint {
-            display: none;
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 12px;
-            font-size: 0.82rem;
-            color: #856404;
-            text-align: left;
-            line-height: 1.6;
-        }
-
-        #installed-msg {
-            display: none;
-            background: #d4edda;
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 12px;
-            font-size: 0.88rem;
-            color: #155724;
-            font-weight: 600;
-        }
-
-        /* ===== LOADING ===== */
-        #frame-loading {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: linear-gradient(135deg, #a8e6cf 0%, #7fcdcd 30%, #74b9ff 60%, #81ecec 100%);
-            align-items: center;
-            justify-content: center;
-            z-index: 5000;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        #frame-loading.active { display: flex; }
-
-        .spinner {
-            width: 52px;
-            height: 52px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top: 4px solid white;
+        
+        .mobile-loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #74b9ff;
             border-radius: 50%;
-            animation: spin 0.9s linear infinite;
+            animation: spin 1s linear infinite;
         }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .loading-text {
-            color: white;
-            font-weight: 700;
-            font-size: 1.1rem;
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-
-        /* ===== IFRAME A TUTTO SCHERMO ===== */
-        #app-frame {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw;
-            height: 100vh;
-            border: none;
-            z-index: 1000;
-            background: white;
+        
+        @media (max-width: 768px) {
+            .container { padding: 8px; }
+            .header { padding: 20px 16px; margin-bottom: 12px; border-radius: 18px; }
+            .title { font-size: 1.6rem; }
+            .subtitle { font-size: 0.9rem; }
         }
     </style>
+    
+    <?!= include('style'); ?>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> 
 </head>
+
 <body>
+<script>window._test123 = 'funziona';</script>
 
-<!-- SPLASH -->
-<div id="splash">
-    <div class="splash-card">
-        <img src="icon-192.png" alt="Logo Campo ANSPI" class="splash-logo">
-        <div class="splash-title">Campo Don Michele FIORE</div>
-        <div class="splash-subtitle">⚽ Parrocchia Sant'Agostino · ANSPI Giovinazzo</div>
+    <!-- Loading screen per mobile -->
+    <div class="mobile-loading" id="mobileLoading">
+        <div class="mobile-loading-spinner"></div>
+    </div>
 
-        <div id="installed-msg">✅ App installata!</div>
-        <div id="ios-hint">
-            <strong>📱 Installa su iPhone:</strong><br>
-            Tocca <strong>Condividi</strong> (⬆️) in Safari,<br>
-            poi <strong>"Aggiungi alla schermata Home"</strong>.
+    <!-- Status indicator ottimizzato per mobile -->
+    <div class="status-indicator" id="statusIndicator">🔄 Connessione...</div>
+    
+    <!-- SPLASH SCREEN -->
+    <div class="splash-screen" id="splashScreen">
+        <div class="splash-content">
+            <div class="splash-logos">
+                <img src="https://i.imgur.com/MIoHBFU.jpeg" alt="Campo Don Michele FIORE" class="splash-main-logo">
+            </div>
+            
+            <h1 class="splash-title">Sistema Prenotazioni</h1>
+            <h2 class="splash-title-secondary">Sport & Eventi</h2>
+            <div class="splash-subtitle">Campo Don Michele FIORE</div>
+            
+            <button class="splash-enter-btn" id="splashEnterBtn">
+                <span>🚀 ENTRA IN CAMPO</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Container principale (nascosto inizialmente) -->
+    <div class="container" id="mainContainer" style="display: none;">
+        <!-- Header ottimizzato -->
+        <div class="header">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <img src="https://i.imgur.com/0Tl9Jv9.png" alt="Logo Parrocchia" style="height: 60px; object-fit: contain;" loading="eager">
+                <h1 class="title" style="margin: 0;">Campo Don Michele FIORE</h1>
+                <img src="https://i.imgur.com/0Tl9Jv9.png" alt="Logo Parrocchia" style="height: 60px; object-fit: contain;" loading="eager">
+            </div>
+            <div class="subtitle">🏆 Parrocchia Sant'Agostino - ANSPI 🏆</div>
+        </div>
+        
+        <!-- Sezione prenotazioni ottimizzata -->
+        <div class="booking-section" id="booking-section">
+            <button class="btn btn-back" id="btn-back" style="display: none;">← Indietro</button>
+            <h2 class="section-title" id="main-section-title">SCEGLI IL TUO EVENTO</h2>
+    
+            <!-- Grid Eventi ottimizzato per mobile -->
+            <div class="event-grid">
+                <button id="event-calcetto" class="event-card" aria-label="Prenota calcetto">
+                    <span class="event-icon">⚽</span>Calcetto
+                </button>
+                <button id="event-pallavolo" class="event-card pallavolo" aria-label="Prenota pallavolo">
+                    <span class="event-icon">🏐</span>Pallavolo
+                </button>
+                <button id="event-compleanno" class="event-card compleanno" aria-label="Prenota compleanno">
+                    <span class="event-icon">🎉</span>Compleanno
+                </button>
+                <button id="event-eventi" class="event-card eventi" aria-label="Prenota evento speciale">
+                    <span class="event-icon">🎪</span>Evento Straordinario
+                </button>
+            </div>
+    
+            <!-- Calendario Pubblico ottimizzato -->
+            <div class="public-calendar-container" id="publicCalendar" style="display: none;">
+                <h3 id="calendar-title">📅 Seleziona la Data per <span id="selectedEventName"></span></h3>
+        
+                <div class="calendar-view">
+                    <div class="calendar-header">
+                        <button class="calendar-nav-btn prev" id="publicPrevMonth" aria-label="Mese precedente">‹</button>
+                        <h3 id="publicMonthYear"></h3>
+                        <button class="calendar-nav-btn next" id="publicNextMonth" aria-label="Mese successivo">›</button>
+                    </div>
+                    <div class="calendar-grid" id="publicCalendarWeekdays"></div>
+                    <div class="calendar-grid" id="publicCalendarDays"></div>
+                </div>
+        
+                <!-- Leggenda ottimizzata per mobile -->
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #28a745;"></span>
+                        🟢 Disponibile
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #ffc107;"></span>
+                        🟡 Parzialmente occupato
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #dc3545;"></span>
+                        🔴 Completamente occupato
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #6c757d;"></span>
+                        ⚫ Passato
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #e17055;"></span>
+                        🚪 Struttura chiusa
+                    </div>
+                </div>
+        
+                <div class="calendar-help">
+                    <p style="text-align: center; color: rgba(0,0,0,0.8); margin-top: 15px;">
+                        💡 <strong>Clicca su un giorno</strong> per vedere i dettagli e prenotare
+                    </p>
+                </div>
+            </div>
+<!-- Form Prenotazione ottimizzato -->
+            <form class="booking-form" id="bookingForm" style="display: none;">
+                <div class="form-group">
+                    <label for="nome">👤 Nome e Cognome: <em>(campo obbligatorio)</em></label>
+                    <input type="text" id="nome" required autocomplete="name" aria-describedby="nome-help">
+                    <small id="nome-help" style="display: none;">Inserisci il tuo nome completo</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">📧 Email: <em>(campo obbligatorio)</em></label>
+                    <input type="email" id="email" required autocomplete="email" aria-describedby="email-help">
+                    <small id="email-help" style="display: none;">Inserisci un indirizzo email valido</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="telefono">📞 Telefono: <em>(campo obbligatorio)</em></label>
+                    <input type="tel" id="telefono" required autocomplete="tel" aria-describedby="telefono-help">
+                    <small id="telefono-help" style="display: none;">Inserisci il tuo numero di telefono</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="data">📅 Data: <em>(campo obbligatorio)</em></label>
+                    <input type="date" id="data" required aria-describedby="data-help">
+                    <small id="data-help" style="display: none;">Seleziona la data dell'evento</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ora">🕐 Ora: <em>(campo obbligatorio)</em></label>
+                    <input type="time" id="ora" required aria-describedby="ora-help">
+                    <small id="ora-help" style="display: none;">Seleziona l'orario dell'evento</small>
+                </div>
+                
+                <div class="campo-selection" id="campoSelection">
+                    <div class="booking-message">⚠️ Per eventi privati, contattare l'amministratore.</div>
+                </div>
+        
+                <div class="form-group" id="note-group">
+                    <label for="note">📝 Note aggiuntive:</label>
+                    <textarea id="note" rows="3" placeholder="Eventuali richieste particolari..." aria-describedby="note-help"></textarea>
+                    <small id="note-help" style="display: none;">Inserisci eventuali note o richieste speciali</small>
+                </div>
+
+                <!-- Dettagli eventi esclusivi ottimizzati -->
+                <div id="exclusive-event-details" class="exclusive-details-container" style="display: none;">
+                    <div class="form-group">
+                        <label for="person-count">👤 Numero approssimativo di persone:</label>
+                        <input type="number" id="person-count" min="1" placeholder="Es. 25" aria-describedby="person-count-help">
+                        <small id="person-count-help" style="display: none;">Stima del numero di partecipanti</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>🎶 Necessità di impianto musicale?</label>
+                        <div class="switch-field">
+                            <input type="radio" id="music-yes" name="music-option" value="Sì" />
+                            <label for="music-yes">Sì</label>
+                            <input type="radio" id="music-no" name="music-option" value="No" checked/>
+                            <label for="music-no">No</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>🪑 Necessità di tavoli e sedie?</label>
+                        <div class="switch-field">
+                            <input type="radio" id="tables-yes" name="tables-option" value="Sì" />
+                            <label for="tables-yes">Sì</label>
+                            <input type="radio" id="tables-no" name="tables-option" value="No" checked/>
+                            <label for="tables-no">No</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="other-requests">➕ Altre richieste particolari:</label>
+                        <textarea id="other-requests" rows="2" placeholder="Specificare qui..." aria-describedby="other-requests-help"></textarea>
+                        <small id="other-requests-help" style="display: none;">Altre richieste o specifiche particolari</small>
+                    </div>
+                </div>
+        
+                <button type="button" class="btn" id="btn-submit-booking">📋 Conferma Prenotazione</button>
+            </form>
+            
+            <!-- Footer ottimizzato -->
+            <div class="copyright-footer" style="margin-top: 40px; background: #212529; padding: 25px; border-radius: 12px; border: 2px solid #fdcb6e;">
+                <div style="width: 60%; height: 3px; background: linear-gradient(90deg, #74b9ff 0%, #00b894 50%, #fdcb6e 100%); margin: 0 auto 20px; border-radius: 2px;"></div>
+                <div style="text-align: center; padding: 0 20px;">
+                    <p style="color: #fff; margin: 0; font-size: 0.9rem; font-weight: 500;">
+                        🏛️ <strong>Parrocchia Sant'Agostino</strong> • ANSPI Giovinazzo
+                    </p>
+                    <p style="color: #adb5bd; margin: 8px 0 0; font-size: 0.8rem;">
+                        Sistema di Prenotazioni © 2025 • Tutti i diritti riservati
+                    </p>
+                </div>
+            </div>
         </div>
 
-        <button id="btn-install">📲 Installa l'App</button>
-        <button id="btn-enter">🚀 Entra nel Campo</button>
+        <!-- Info Folder -->
+        <div class="info-folder">
+            <h2 class="section-title">📁 Informazioni Utili</h2>
+            <div class="info-grid">
+                <div class="info-card general"><h3>📋 Generali</h3><ul><li>Orari Apertura: 08:00 - 13:00 / 16:00 - 22:00</li><li>Giorni Apertura: Lunedì - Sabato</li><li style="color: #ffdddd;"><strong>Chiusura: Domenica e festivi</strong></li><li style="color: #ffdddd;"><strong>Chiusura giornaliera: 13:00 - 16:00</strong></li></ul></div>
+                <div class="info-card services"><h3>⚽ Servizi</h3><ul><li>Illuminazione</li><li>Spogliatoi</li><li>Docce</li></ul></div>
+                <div class="info-card contacts">
+                    <h3>📞 Contatti</h3>
+                    <ul>
+                        <li class="email-contact">
+                            📧 <a href="mailto:prenotazionecampoanspi@gmail.com" class="email-link">prenotazionecampoanspi@gmail.com</a>
+                            <span class="copy-hint">(clicca per copiare)</span>
+                        </li>
+                        <li class="location-contact">📍 <a href="https://www.google.com/maps/place/Campo+Marconi/@41.18303,16.6694566,19z/data=!4m6!3m5!1s0x1347fb81834ee133:0x7e5ab8ee0c5d56f6!8m2!3d41.18332!4d16.6703793!16s%2Fg%2F11nmqs3cvm?entry=ttu&g_ep=EgoyMDI1MDYzMC4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">Campo Don Michele FIORE - ANSPI GIOVINAZZO</a></li>
+                    </ul>
+                </div>
+                <div class="info-card rules"><h3>🏟️ Regolamento</h3><ul><li>Cosa Portare: Scarpe adatte, Acqua</li><li>Vietato: Fumo, Alcol, Animali</li><li>Rispetto dell'orario e del luogo</li></ul></div>
+            </div>
+        </div>
+
+        <!-- Cancella Prenotazione -->
+        <div class="cancel-section">
+            <h2 class="section-title">❌ Cancella Prenotazione</h2>
+            <div class="form-group"><label for="cancelCode">🔐 Codice Prenotazione:</label><input type="text" id="cancelCode" placeholder="Inserisci il codice ricevuto via email"></div>
+            <button class="btn btn-danger" id="btn-cancel-booking">🗑️ Cancella Prenotazione</button>
+        </div>
+        
+        <!-- Admin Login -->
+        <div class="admin-login" id="adminLoginView">
+            <h2 class="section-title">👨‍💼 Area Amministratore</h2>
+            <div class="form-group">
+                <label for="loginEmail">📧 Email Amministratore:</label>
+                <input type="email" id="loginEmail" placeholder="La tua email da amministratore" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">🔑 Password:</label>
+                <div style="position: relative;">
+                    <input type="password" id="loginPassword" placeholder="Inserisci la password">
+                    <button type="button" id="password-toggle" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; color: #636e72;" title="Mostra/Nascondi password">
+                        👁️
+                    </button>
+                </div>
+            </div>
+            <button class="btn" id="btn-admin-login">🚀 Accedi</button>
+            <a href="#" id="forgotPasswordLink" style="display: block; text-align: center; margin-top: 15px; font-size: 0.9rem; color: var(--text-light);" onclick="showPasswordResetForm()">Password dimenticata?</a>
+        </div>
+<!-- Admin Panel -->
+        <div class="admin-panel" id="adminPanel">
+            <button class="btn btn-back" id="btn-admin-back" style="display: none;">← Torna al Dashboard</button>
+            <div class="admin-tabs" id="admin-tabs-container">
+                <button class="admin-tab active" data-tab="dashboard">📊 Dashboard</button>
+                <button class="admin-tab" data-tab="calendar">📅 Calendario</button>
+                <button class="admin-tab" data-tab="archive-calendar">🗂️ Archivio</button>
+                <button class="admin-tab" data-tab="bookings">📋 Prenotazioni</button>
+                <button class="admin-tab" data-tab="eventi-speciali">🎉 Eventi Speciali</button>
+                <button class="admin-tab" data-tab="new-booking">➕ Nuova</button>
+                <button class="admin-tab" data-tab="gestione-campo">🛠️ Gestione Campo</button>
+                <button class="admin-tab admin-master-only" data-tab="configurazione">⚙️ Configurazione</button>
+                <button id="btn-admin-exit" class="admin-tab" style="background: var(--danger-soft); color: white; margin-left: auto;">🚪 Esci</button>
+            </div>
+            
+            <div id="admin-content-container" style="padding-top:20px;">
+                <!-- Dashboard -->
+                <div class="admin-content active" id="admin-dashboard">
+                    <h3>📊 Statistiche</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card"><span class="stat-number" id="totalBookings">0</span><div>Totali</div></div>
+                        <div class="stat-card"><span class="stat-number" id="todayBookings">0</span><div>Oggi</div></div>
+                        <div class="stat-card"><span class="stat-number" id="weekBookings">0</span><div>Settimana</div></div>
+                        <div class="stat-card"><span class="stat-number" id="activeBookings">0</span><div>Attive</div></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn btn-secondary" id="btn-refresh-data">🔄 Aggiorna Dati</button>
+                    </div>
+                </div>
+                
+                <!-- Calendario Admin -->
+                <div class="admin-content" id="admin-calendar">
+                    <div class="calendar-container">
+                        <div class="calendar-view-toggle">
+                            <button class="btn btn-secondary" id="btn-view-monthly">Mese</button>
+                            <button class="btn btn-secondary" id="btn-view-weekly">Settimana</button>
+                        </div>
+                        <div id="monthly-view">
+                            <div class="calendar-header">
+                                <button class="calendar-nav-btn prev" id="prevMonthBtn">‹</button>
+                                <h3 id="monthYear"></h3>
+                                <button class="calendar-nav-btn next" id="nextMonthBtn">›</button>
+                            </div>
+                            <div class="calendar-grid" id="calendarWeekdays"></div>
+                            <div class="calendar-grid" id="calendarDays"></div>
+                        </div>
+                        <div id="weekly-view">
+                            <div class="calendar-header">
+                                <button class="calendar-nav-btn prev" id="prevWeekBtn">‹</button>
+                                <h3 id="weekRange"></h3>
+                                <button class="calendar-nav-btn next" id="nextWeekBtn">›</button>
+                            </div>
+                            <div class="weekly-grid">
+                                <div class="time-labels" id="timeLabels"></div>
+                                <div class="days-container" id="daysContainer"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Archivio Calendario -->
+                <div class="admin-content" id="admin-archive-calendar">
+                    <div class="calendar-container">
+                        <h3 style="color: white; text-align: center; margin-bottom: 20px;">🗂️ Calendario Storico Archiviato (Sola Lettura)</h3>
+                        <div id="archive-monthly-view">
+                            <div class="calendar-header">
+                                <button class="calendar-nav-btn prev" id="prevArchiveMonthBtn">‹</button>
+                                <h3 id="archiveMonthYear"></h3>
+                                <button class="calendar-nav-btn next" id="nextArchiveMonthBtn">›</button>
+                            </div>
+                            <div class="calendar-grid" id="archiveCalendarWeekdays"></div>
+                            <div class="calendar-grid" id="archiveCalendarDays"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Prenotazioni -->
+                <div class="admin-content" id="admin-bookings">
+                    <div style="overflow-x: auto;">
+                        <table class="bookings-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cliente</th>
+                                    <th>Evento</th>
+                                    <th>Campo</th>
+                                    <th>Data/Ora</th>
+                                    <th>Ricorrente</th>
+                                    <th>Creato Da</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookingsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Eventi Speciali -->
+                <div class="admin-content" id="admin-eventi-speciali">
+                    <h3>🎉 Eventi Speciali - Gestione Approvazioni</h3>
+                    <p style="color: rgba(255,255,255,0.8); margin-bottom: 20px;">
+                        In questa sezione puoi gestire le richieste di eventi speciali (Compleanni e Eventi Straordinari) che richiedono approvazione.
+                    </p>
+                    
+                    <div class="status-stats" id="eventi-stats" style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <div class="status-stat stat-tutti">
+                            Tutti: <span id="stat-tutti">0</span>
+                        </div>
+                        <div class="status-stat stat-in_attesa">
+                            In Attesa: <span id="stat-in_attesa">0</span>
+                        </div>
+                        <div class="status-stat stat-approvato">
+                            Approvati: <span id="stat-approvato">0</span>
+                        </div>
+                        <div class="status-stat stat-rifiutato">
+                            Rifiutati: <span id="stat-rifiutato">0</span>
+                        </div>
+                    </div>
+
+                    <div class="status-filters" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <button class="filter-btn filter-tutti active" data-filter="tutti">
+                            🔍 Tutti
+                        </button>
+                        <button class="filter-btn filter-in_attesa" data-filter="in_attesa">
+                            ⏳ In Attesa
+                        </button>
+                        <button class="filter-btn filter-approvato" data-filter="approvato">
+                            ✅ Approvati
+                        </button>
+                        <button class="filter-btn filter-rifiutato" data-filter="rifiutato">
+                            ❌ Rifiutati
+                        </button>
+                    </div>
+                    
+                    <div style="overflow-x: auto;">
+                        <table class="bookings-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cliente</th>
+                                    <th>Email</th>
+                                    <th>Evento</th>
+                                    <th>Data/Ora</th>
+                                    <th>Ricorrente</th>
+                                    <th>Stato</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventiSpecialiTableBody">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: rgba(255,255,255,0.6); padding: 40px;">
+                                        📝 Nessun evento speciale trovato
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; margin-top: 20px; border-left: 4px solid #74b9ff;">
+                        <h4 style="color: white; margin-bottom: 10px;">ℹ️ Come funziona</h4>
+                        <ul style="color: rgba(255,255,255,0.8); list-style: none; padding: 0;">
+                            <li style="margin-bottom: 8px;">• <strong>In Attesa:</strong> Eventi che necessitano approvazione</li>
+                            <li style="margin-bottom: 8px;">• <strong>Approva:</strong> Conferma l'evento e invia email al cliente</li>
+                            <li style="margin-bottom: 8px;">• <strong>Rifiuta:</strong> Respinge la richiesta con motivazione</li>
+                            <li>• <strong>Email:</strong> Viene inviata automaticamente all'approvazione</li>
+                        </ul>
+                    </div>
+                </div>
+<!-- Nuova Prenotazione Admin -->
+                <form class="admin-content" id="admin-new-booking">
+                    <h3>➕ Nuova Prenotazione Admin</h3>
+                    <div class="form-group"><label for="adminNome">👤 Nome e Cognome:</label><input type="text" id="adminNome" required></div>
+                    
+                    <div class="form-group" id="adminEmailGroup" style="display: none;">
+                        <label for="adminEmail">📧 Email Richiedente: <em>(obbligatoria per eventi speciali)</em></label>
+                        <input type="email" id="adminEmail" placeholder="Inserisci email del richiedente per conferma evento">
+                    </div>
+                    
+                    <div class="form-group"><label for="adminTelefono">📞 Telefono:</label><input type="tel" id="adminTelefono" required></div>
+                    <div class="form-group"><label for="adminEvento">🎯 Tipo Evento:</label><select id="adminEvento" required><option value="">Seleziona evento</option><option value="calcetto">⚽ Calcetto</option><option value="pallavolo">🏐 Pallavolo</option><option value="compleanno">🎉 Compleanno</option><option value="eventi">🎪 Evento Straordinario</option></select><div id="admin-spazio-label" style="display:none; color: white; font-weight: 600; margin-top: 8px; padding: 8px 12px; background: rgba(0,184,148,0.8); border-radius: 8px; border-left: 3px solid #00b894;"></div>
+                    
+                    <div class="form-group" id="adminConfirmGroup" style="display: none;">
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="adminConfermaEvento" class="checkbox-large">
+                            <label for="adminConfermaEvento" class="checkbox-label" style="color: white !important;">
+                                ✅ Confermo l'approvazione di questo evento speciale
+                            </label>
+                        </div>
+                        <small style="color: rgba(255,255,255,0.8); margin-top: 8px; display: block;">
+                            L'evento occuperà tutto il campo e verrà inviata email di conferma al richiedente.
+                        </small>
+                    </div>
+                    
+                    <div class="form-group"><label for="adminData">📅 Data:</label><input type="date" id="adminData" required></div>
+                    <div class="form-group"><label for="adminOra">🕐 Ora:</label><input type="time" id="adminOra" required></div>
+                    
+                    <div class="form-group" id="admin-note-group">
+                        <label for="adminNote">📝 Note:</label>
+                        <textarea id="adminNote" rows="3" placeholder="Note aggiuntive per l'evento..."></textarea>
+                    </div>
+
+                    <div id="admin-exclusive-event-details" class="exclusive-details-container" style="display: none;">
+                        <div class="form-group">
+                            <label for="admin-person-count">👤 Numero approssimativo di persone:</label>
+                            <input type="number" id="admin-person-count" min="1" placeholder="Es. 25">
+                        </div>
+                        <div class="form-group">
+                            <label>🎶 Necessità di impianto musicale?</label>
+                            <div class="switch-field">
+                                <input type="radio" id="admin-music-yes" name="admin-music-option" value="Sì" />
+                                <label for="admin-music-yes">Sì</label>
+                                <input type="radio" id="admin-music-no" name="admin-music-option" value="No" checked/>
+                                <label for="admin-music-no">No</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>🪑 Necessità di tavoli e sedie?</label>
+                            <div class="switch-field">
+                                <input type="radio" id="admin-tables-yes" name="admin-tables-option" value="Sì" />
+                                <label for="admin-tables-yes">Sì</label>
+                                <input type="radio" id="admin-tables-no" name="admin-tables-option" value="No" checked/>
+                                <label for="admin-tables-no">No</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-other-requests">➕ Altre richieste particolari:</label>
+                            <textarea id="admin-other-requests" rows="2" placeholder="Specificare qui..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="adminRecurringGroup">
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="adminRicorrente" class="checkbox-large">
+                            <label for="adminRicorrente" class="checkbox-label" style="color: white !important;">
+                                🔄 Evento Ricorrente
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn" id="btn-admin-submit-booking">📋 Crea Prenotazione</button>
+                </form>
+                
+                <!-- GESTIONE CAMPO -->
+                <div class="admin-content" id="admin-gestione-campo">
+                    <h3>🛠️ Gestione Campo</h3>
+                    
+                    <!-- Info Sistema Completo -->
+                    <div style="background: rgba(0, 123, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 25px; border-left: 4px solid #007bff;">
+                        <h4 style="color: white; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            ℹ️ Funzionalità Complete del Sistema
+                            <span style="background: #007bff; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold;">v2.0</span>
+                        </h4>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                            <!-- Gestione Prenotazioni -->
+                            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+                                <h5 style="color: #74b9ff; margin-bottom: 10px;">📅 Gestione Prenotazioni</h5>
+                                <ul style="color: rgba(255,255,255,0.8); list-style: none; padding: 0; font-size: 0.85rem; line-height: 1.6;">
+                                    <li>• Calendario mensile e settimanale interattivo</li>
+                                    <li>• Creazione prenotazioni rapide admin</li>
+                                    <li>• Modifica/cancellazione in tempo reale</li>
+                                    <li>• Eventi ricorrenti automatici settimanali</li>
+                                    <li>• Approvazione eventi speciali (compleanni/eventi)</li>
+                                    <li>• Controllo conflitti intelligente</li>
+                                    <li>• Suggerimenti orari alternativi</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Sistema Notifiche -->
+                            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+                                <h5 style="color: #74b9ff; margin-bottom: 10px;">🔔 Sistema Notifiche</h5>
+                                <ul style="color: rgba(255,255,255,0.8); list-style: none; padding: 0; font-size: 0.85rem; line-height: 1.6;">
+                                    <li>• Email automatiche di conferma istantanee</li>
+                                    <li>• Notifiche Telegram real-time per admin</li>
+                                    <li>• Promemoria 30 minuti prima dell'evento</li>
+                                    <li>• Riepilogo giornaliero automatico ore 7:00</li>
+                                    <li>• Alert conflitti e sovrapposizioni</li>
+                                    <li>• Notifiche stato eventi speciali</li>
+                                    <li>• Email di benvenuto nuovi admin</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Funzioni Avanzate -->
+                            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+                                <h5 style="color: #74b9ff; margin-bottom: 10px;">🚀 Funzioni Avanzate</h5>
+                                <ul style="color: rgba(255,255,255,0.8); list-style: none; padding: 0; font-size: 0.85rem; line-height: 1.6;">
+                                    <li>• Ricorrenze intelligenti con spostamento automatico</li>
+                                    <li>• Risoluzione conflitti smart</li>
+                                    <li>• Archiviazione automatica eventi passati</li>
+                                    <li>• Sistema cache multi-livello per performance</li>
+                                    <li>• Backup automatico su Google Sheets</li>
+                                    <li>• Pulizia duplicati automatica</li>
+                                    <li>• Trigger schedulati configurabili</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Controlli Admin -->
+                            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+                                <h5 style="color: #74b9ff; margin-bottom: 10px;">👨‍💼 Controlli Admin</h5>
+                                <ul style="color: rgba(255,255,255,0.8); list-style: none; padding: 0; font-size: 0.85rem; line-height: 1.6;">
+                                    <li>• Dashboard statistiche real-time</li>
+                                    <li>• Gestione multi-admin gerarchica</li>
+                                    <li>• Sistema password sicuro con hash</li>
+                                    <li>• Reset password via email</li>
+                                    <li>• Visualizzazione archivio storico completo</li>
+                                    <li>• Export dati in Excel/CSV</li>
+                                    <li>• Debug e diagnostica sistema avanzata</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Funzionalità Speciali -->
+                        <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                            <h5 style="color: #fdcb6e; margin-bottom: 10px;">⭐ Funzionalità Speciali</h5>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; font-size: 0.85rem; color: rgba(255,255,255,0.8);">
+                                <div>
+                                    <strong style="color: #74b9ff;">🎯 Eventi Esclusivi:</strong><br>
+                                    Compleanni e eventi straordinari occupano tutto il campo con approvazione admin
+                                </div>
+                                <div>
+                                    <strong style="color: #74b9ff;">🔄 Ricorrenze Smart:</strong><br>
+                                    Genera automaticamente eventi settimanali con risoluzione conflitti intelligente
+                                </div>
+                                <div>
+                                    <strong style="color: #74b9ff;">📱 Integrazione Telegram:</strong><br>
+                                    Bot dedicato per notifiche istantanee e gestione remota
+                                </div>
+                                <div>
+                                    <strong style="color: #74b9ff;">🌐 Web App Responsive:</strong><br>
+                                    Funziona perfettamente su desktop, tablet e smartphone
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Shortcuts e Tips -->
+                        <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 15px;">
+                            <h5 style="color: #28a745; margin-bottom: 10px;">💡 Tips & Shortcuts</h5>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-size: 0.85rem; color: rgba(255,255,255,0.8);">
+                                <div><kbd style="background: #495057; padding: 3px 6px; border-radius: 3px;">ESC</kbd> - Chiudi tutti i modali</div>
+                                <div><kbd style="background: #495057; padding: 3px 6px; border-radius: 3px;">F5</kbd> - Aggiorna dati dal server</div>
+                                <div><kbd style="background: #495057; padding: 3px 6px; border-radius: 3px;">Ctrl+F</kbd> - Cerca nel calendario</div>
+                                <div><kbd style="background: #495057; padding: 3px 6px; border-radius: 3px;">Tab</kbd> - Naviga tra i campi form</div>
+                                <div>🔄 Click su evento per dettagli</div>
+                                <div>📅 Doppio click su giorno per nuovo evento</div>
+                            </div>
+                        </div>
+                    </div>
+<!-- ✅ SEZIONE GESTIONE TRIGGER AUTOMATICO - COMPLETA -->
+                    <!-- Sezione per inviare informazioni sulle prenotazioni di due ore -->
+                    <div class="admin-master-only" style="background: rgba(116, 185, 255, 0.1); border-radius: 12px; padding: 25px; margin-bottom: 25px; border-left: 4px solid #74b9ff;">
+                        <h4 style="color: white; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            ⏱️ Informazioni Prenotazioni
+                            <span style="background: #3498db; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold;">COMUNICAZIONE</span>
+                        </h4>
+                        
+                        <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px; line-height: 1.5;">
+                            Invia un'email informativa agli utenti riguardo alle regole per le prenotazioni di due ore consecutive.
+                        </p>
+                        
+                        <div class="form-group">
+                            <label for="two-hour-email">📧 Email destinatario:</label>
+                            <input type="email" id="two-hour-email" placeholder="Inserisci l'email del destinatario">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="two-hour-name">👤 Nome destinatario:</label>
+                            <input type="text" id="two-hour-name" placeholder="Inserisci il nome del destinatario">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="two-hour-extra">📝 Informazioni aggiuntive (opzionale):</label>
+                            <textarea id="two-hour-extra" placeholder="Inserisci un messaggio urgente o informazioni aggiuntive da includere nell'email" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px;"></textarea>
+                        </div>
+                        
+                        <button id="send-two-hour-info" class="btn btn-primary" style="background-color: #3498db; border: none; padding: 10px 15px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-top: 15px;">
+                            <span>📧</span> Invia Informazione
+                        </button>
+                    </div>
+                    
+                    <!-- Sezione gestione trigger -->
+                    <div class="admin-master-only" style="background: rgba(116, 185, 255, 0.1); border-radius: 12px; padding: 25px; margin-bottom: 25px; border-left: 4px solid #74b9ff;">
+                        <h4 style="color: white; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            🕛 Gestione Trigger Automatico
+                            <span style="background: #28a745; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold;">SISTEMA</span>
+                        </h4>
+                        
+                        <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px; line-height: 1.5;">
+                            Configura e gestisci i trigger automatici per l'archiviazione degli eventi passati e la generazione delle ricorrenze intelligenti.
+                        </p>
+                        
+                        <!-- Status dei Trigger MODERNO -->
+                        <div id="trigger-status" class="trigger-status-modern">
+                            <div class="trigger-status-content">
+                                <div class="trigger-status-icon">
+                                    <span id="trigger-status-icon">⏳</span>
+                                </div>
+                                <div class="trigger-status-text">
+                                    <div id="trigger-status-title">Controllo stato trigger...</div>
+                                    <div id="trigger-status-subtitle">Verifica in corso</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Controlli Trigger -->
+                        <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-success" id="btn-attiva-trigger" style="flex: 1; min-width: 180px; background: #28a745;">
+                                <span class="btn-text">✅ Attiva Trigger</span>
+                                <span class="btn-loading" style="display: none;">⏳ Attivazione...</span>
+                            </button>
+                            <button type="button" class="btn btn-danger" id="btn-disattiva-trigger" style="flex: 1; min-width: 180px; background: #dc3545;">
+                                <span class="btn-text">❌ Disattiva Trigger</span>
+                                <span class="btn-loading" style="display: none;">⏳ Disattivazione...</span>
+                            </button>
+                            <button type="button" class="btn btn-info" id="btn-aggiorna-trigger" style="flex: 1; min-width: 180px; background: #17a2b8;">
+                                <span class="btn-text">🔄 Aggiorna Versione</span>
+                                <span class="btn-loading" style="display: none;">⏳ Aggiornamento...</span>
+                            </button>
+                        </div>
+                          <!-- Report Settimanale -->
+<div class="admin-master-only" style="background: rgba(0, 184, 148, 0.1); border-radius: 12px; padding: 25px; margin-bottom: 25px; border-left: 4px solid #00b894;">
+    <h4 style="color: white; margin-bottom: 15px;">📄 Report Settimanale</h4>
+    <p style="color: rgba(255,255,255,0.8); margin-bottom: 20px; font-size: 0.9rem;">
+        Genera un PDF con tutti gli eventi della settimana selezionata, suddivisi per tipo.
+    </p>
+    <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+        <div class="form-group" style="margin: 0;">
+            <label style="color: white; font-size: 0.9rem;">📅 Seleziona settimana:</label>
+            <input type="week" id="reportWeekInput" style="margin-top: 8px; padding: 8px 12px; border-radius: 8px; border: none; font-size: 0.9rem;">
+        </div>
+        <button class="btn" id="btn-genera-report" style="background: #00b894; color: white; min-width: 180px;">
+            📄 Genera PDF
+        </button>
+    </div>
+</div>                  
+                        <!-- Info Sistema -->
+                        <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 15px; margin-top: 20px;">
+                            <h5 style="color: white; margin-bottom: 10px;">ℹ️ Come Funziona</h5>
+                            <ul style="color: rgba(255,255,255,0.8); list-style: none; padding: 0; font-size: 0.9rem;">
+                                <li style="margin-bottom: 8px;">• <strong>Attiva Trigger:</strong> Crea 2 trigger automatici (archiviazione ogni 30 min + riepilogo giornaliero ore 7:00)</li>
+                                <li style="margin-bottom: 8px;">• <strong>Disattiva Trigger:</strong> Elimina tutti i trigger automatici del sistema</li>
+                                <li style="margin-bottom: 8px;">• <strong>Aggiorna Versione:</strong> Ricrea i trigger con l'ultima versione del codice dopo un deploy</li>
+                                <li style="margin-bottom: 8px;">• <strong>Notifiche:</strong> Ricevi conferma su Telegram per ogni operazione</li>
+                                <li>• <strong>Stato:</strong> Il banner mostra lo stato in tempo reale del sistema</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Suggerimento Post-Deploy -->
+                        <div style="background: rgba(253, 203, 110, 0.1); border-left: 4px solid #fdcb6e; border-radius: 8px; padding: 15px; margin-top: 20px;">
+                            <h5 style="color: #fdcb6e; margin-bottom: 10px;">💡 Dopo Ogni Deploy</h5>
+                            <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 0.9rem;">
+                                <strong>Importante:</strong> Quando fai un nuovo deploy su Apps Script, clicca su <strong>"🔄 Aggiorna Versione"</strong> 
+                                per assicurarti che i trigger utilizzino il codice più recente. Altrimenti continueranno a usare la versione vecchia!
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Separatore -->
+                    <div style="height: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); margin: 30px 0;"></div>
+                    
+                    <!-- Sezione Ricorrenze Intelligenti -->
+                    <div class="admin-master-only" style="background: rgba(116, 185, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 25px; border-left: 4px solid #74b9ff;">
+                        <h4 style="color: white; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            🔄 Sistema Ricorrenze Intelligenti
+                            <span style="background: #28a745; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold;">NUOVO</span>
+                        </h4>
+                        
+                        <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px; line-height: 1.5;">
+                            Il sistema genera automaticamente le ricorrenze <strong>solo quando necessario</strong> e sposta intelligentemente gli eventi in caso di conflitto con eventi esclusivi.
+                        </p>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                            <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 1.5rem; margin-bottom: 5px;">🤖</div>
+                                <div style="font-size: 0.9rem; color: rgba(255,255,255,0.8);">Generazione Automatica</div>
+                                <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">Spostamento intelligente</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 1.5rem; margin-bottom: 5px;">📦</div>
+                                <div style="font-size: 0.9rem; color: rgba(255,255,255,0.8);">Archiviazione</div>
+                                <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">Eventi passati</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Controlli Sistema -->
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" id="btn-test-smart-recurring" style="background: #17a2b8; flex: 1; min-width: 200px;">
+                                <span class="btn-text">🧪 Test Sistema</span>
+                                <span class="btn-loading" style="display: none;">⏳ Testing...</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Info stato trigger -->
+                        <div id="smart-trigger-status" style="margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 0.9rem;">
+                            <strong>📊 Stato Sistema:</strong> <span id="trigger-status-text">Caricamento...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Separatore -->
+                    <div style="height: 1px; background: rgba(255,255,255,0.2); margin: 30px 0;"></div>
+                    
+                    <!-- Sezione Archiviazione -->
+                    <div class="admin-master-only" style="background: rgba(253, 203, 110, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 25px; border-left: 4px solid #fdcb6e;">
+                        <h4 style="color: white; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            📦 Gestione Archiviazione
+                            <span style="background: #fdcb6e; color: #2d3436; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold;">AGGIORNATO</span>
+                        </h4>
+                        
+                        <p style="color: rgba(255,255,255,0.9); margin-bottom: 15px;">
+                            L'archiviazione automatica ora funziona con due sistemi:<br>
+                            • <strong>Archiviazione tempestiva:</strong> Eventi archiviati 30 minuti dopo la fine (ogni 30 minuti)<br>
+                            • <strong>Archiviazione ricorrenze:</strong> Eventi ricorrenti archiviati quando generano la ricorrenza successiva
+                        </p>
+                        
+                        <div style="text-align: center;">
+                            <button class="btn btn-warning" id="btn-manual-archive" style="background: #fdcb6e; color: #2d3436; font-weight: 600;">
+                                <span class="btn-text">🕛 Esegui Processo Manuale</span>
+                                <span class="btn-loading" style="display: none;">⏳ Elaborazione...</span>
+                            </button>
+                        </div>
+                        
+                        <div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; font-size: 0.85rem; color: rgba(255,255,255,0.8);">
+                            💡 <strong>Nota:</strong> Il processo manuale esegue lo stesso algoritmo del trigger automatico (ricorrenze + archiviazione).
+                        </div>
+                    </div>
+                    
+                    <!-- Info Sistema -->
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 15px; margin-top: 20px;">
+                        <h5 style="color: white; margin-bottom: 10px;">ℹ️ Come Funziona</h5>
+                        <ul style="color: rgba(255,255,255,0.8); list-style: none; padding: 0; font-size: 0.9rem;">
+                            <li style="margin-bottom: 8px;">• <strong>Archiviazione tempestiva:</strong> Ogni 30 minuti, archivia eventi finiti da 30+ minuti</li>
+                            <li style="margin-bottom: 8px;">• <strong>Trigger ricorrenze:</strong> Integrato nel sistema principale</li>
+                            <li style="margin-bottom: 8px;">• <strong>Genera ricorrenze</strong> solo quando l'evento precedente è passato</li>
+                            <li style="margin-bottom: 8px;">• <strong>Risolve conflitti</strong> spostando automaticamente le ricorrenze</li>
+                            <li style="margin-bottom: 8px;">• <strong>Archivia eventi</strong> ricorrenti quando generano la ricorrenza</li>
+                            <li>• <strong>Notifiche Telegram</strong> per archiviazioni automatiche</li>
+                        </ul>
+                    </div>
+
+                    <!-- Debug Panel -->
+                    <div id="debug-panel" style="background: rgba(220, 53, 69, 0.1); border-radius: 8px; padding: 15px; margin-top: 20px; border-left: 4px solid #dc3545;">
+                        <h5 style="color: #ff6b6b; margin-bottom: 10px;">🔧 Debug Tools</h5>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-danger" id="btn-debug-calendar">📊 Debug Calendario</button>
+                            <button class="btn btn-danger" id="btn-clear-cache">🗑️ Clear Cache</button>
+                            <button class="btn btn-danger" id="btn-test-telegram">📱 Test Telegram</button>
+                        </div>
+                    </div>
+
+                    <!-- Sezione Gestione Admin Master -->
+                    <div id="admin-management-section" style="margin-top: 40px;">
+                        <h3>Gestione Amministratori</h3>
+                        <table id="admin-table" class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Nome</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <h4>Aggiungi nuovo admin</h4>
+                        <form id="add-admin-form" style="display:flex; gap:10px; margin-bottom:20px;">
+                            <input type="email" id="new-admin-email" placeholder="Email" required>
+                            <input type="text" id="new-admin-nome" placeholder="Nome (opzionale)">
+                            <button type="submit" class="btn">Aggiungi</button>
+                        </form>
+                    </div>
+                    
+                    <!-- Modale conferma eliminazione admin -->
+                    <div id="confirm-delete-admin-modal" class="modal" style="display:none;">
+                        <div class="modal-content">
+                            <p id="confirm-delete-admin-text"></p>
+                            <button id="confirm-delete-admin-btn" class="btn btn-danger">Elimina</button>
+                            <button onclick="closeDeleteAdminModal()" class="btn">Annulla</button>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                
+                <!-- TAB CONFIGURAZIONE -->
+                <div id="admin-configurazione" class="admin-content">
+                    <h3 style="margin-bottom: 20px; color: white;">⚙️ Configurazione Sistema</h3>
+                    <p style="opacity: 0.8; margin-bottom: 25px; font-size: 0.9rem; color: rgba(255,255,255,0.8);">
+                        Modifica le impostazioni del sistema senza toccare il codice. Le modifiche sono immediate e persistenti.
+                    </p>
+                    <div id="config-loading" style="text-align: center; padding: 40px; color: white;">
+                        🔄 Caricamento configurazione...
+                    </div>
+                    <div id="config-container" style="display: none;">
+                        <div class="config-section">
+                            <h4>🕐 Orari e Giorni</h4>
+                            <div id="config-orari"></div>
+                        </div>
+                        <div class="config-section">
+                            <h4>🏟️ Servizi e Contatti</h4>
+                            <div id="config-servizi"></div>
+                        </div>
+                        <div class="config-section">
+                            <h4>⏱️ Durate Eventi (minuti)</h4>
+                            <div id="config-durate"></div>
+                        </div>
+                        <div class="config-section">
+                            <h4>📝 Testi Interfaccia</h4>
+                            <div id="config-testi"></div>
+                        </div>
+                        <div class="config-section">
+                             <h4>🖼️ Loghi e Immagini</h4>
+                             <div id="config-immagini"></div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+            </div>
+        </div>
+    </div>
+          
     </div>
 </div>
-
-<!-- LOADING -->
-<div id="frame-loading">
-    <div class="spinner"></div>
-    <div class="loading-text">Caricamento...</div>
-</div>
-
-<!-- IFRAME A TUTTO SCHERMO -->
-<iframe
-    id="app-frame"
-    src=""
-    allow="fullscreen"
-    title="Campo Don Michele FIORE">
-</iframe>
+<!-- Footer -->
+    <div style="text-align: center; padding: 15px 20px; margin-top: 5px;">
+        <img src="https://i.imgur.com/rBbM8pH.jpeg" alt="Logo ANSPI" style="height: 60px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <p style="font-size: 0.8rem; color: #636e72; margin-top: 8px; font-family: 'Nunito', sans-serif;">
+            Powered by Gilgamesh <span id="app-version-footer" style="opacity: 0.6;"></span>
+        </p>
+    </div>
+    
+    <!-- Modali -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="confirmModalTitle"></h2>
+                <span id="close-confirm-modal" class="close">×</span>
+            </div>
+            <div id="confirmContent"></div>
+            <div style="padding: 24px; text-align: right;">
+                <button class="btn btn-danger" id="btn-cancel-final-booking" style="margin-right: 12px; background: var(--text-light);">❌ Annulla</button>
+                <button class="btn" id="btn-confirm-final-booking">✅ Conferma</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="details-modal" class="modal">
+        <div class="modal-content" id="details-modal-content-wrapper">
+            <div class="modal-header">
+                <h2 class="modal-title" id="details-modal-title"></h2>
+                <span id="close-details-modal" class="close">×</span>
+            </div>
+            <div id="details-modal-body"></div>
+        </div>
+    </div>
+    
+    <div id="conflictModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">⚠️ La struttura è chiusa</h2>
+                <span id="close-conflict-modal-btn" class="close">×</span>
+            </div>
+            <div id="conflictContent" class="confirm-modal-body" style="padding: 24px;"></div>
+        </div>
+    </div>
+    
+    <div id="resetPasswordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="resetModalTitle"></h2>
+                <span id="close-reset-modal" class="close">×</span>
+            </div>
+            <div id="resetContent" class="confirm-modal-body" style="padding: 24px; text-align: left;"></div>
+            <div id="resetFooter" style="padding: 24px; text-align: right;"></div>
+        </div>
+    </div>
+    
+    <!-- Modal Archiviazione (legacy - può essere rimosso se non usato) -->
+    <div id="archiveModal" class="modal">
+        <div class="modal-content archive-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">🕛 Gestione Trigger Automatico</h2>
+                <span id="close-archive-modal" class="close">×</span>
+            </div>
+            <div class="archive-modal-body">
+                <div class="archive-text">
+                    <h3>🕛 Archiviazione Automatica</h3>
+                    <p>Configura l'archiviazione automatica degli eventi passati. Il sistema:</p>
+                    <ul>
+                        <li>✅ Si esegue automaticamente ogni 30 minuti</li>
+                        <li>✅ Sposta gli eventi passati in un archivio separato</li>
+                        <li>✅ Mantiene i dati per riferimento futuro</li>
+                        <li>✅ Migliora le prestazioni del sistema</li>
+                        <li>📱 Invia notifica Telegram quando archivia eventi</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwmRg1QHpxWpVttfAnZA0HHH_Z_J_VqLDM-9xfMQv7V-coRwubcmHT6yPTBUhabfkvo/exec';
-
-let deferredPrompt = null;
-
-const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-    || window.navigator.standalone === true;
-
-// Se già installata e aperta in standalone, vai subito all'app
-if (isStandalone) {
-    goToApp();
-}
-
-if (isIOS && !isStandalone) {
-    document.getElementById('ios-hint').style.display = 'block';
-}
-
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    document.getElementById('btn-install').style.display = 'block';
-});
-
-window.addEventListener('appinstalled', () => {
-    document.getElementById('btn-install').style.display = 'none';
-    document.getElementById('installed-msg').style.display = 'block';
-    deferredPrompt = null;
-});
-
-document.getElementById('btn-install').addEventListener('click', async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-        document.getElementById('btn-install').style.display = 'none';
-        document.getElementById('installed-msg').style.display = 'block';
+(function(){
+    var _serverDataRaw = '<?!= JSON.stringify(queryString || {}) ?>';
+    try {
+        window.serverData = JSON.parse(_serverDataRaw);
+    } catch (e) {
+        window.serverData = {};
     }
-    deferredPrompt = null;
-});
-
-document.getElementById('btn-enter').addEventListener('click', () => {
-    goToApp();
-});
-
-function goToApp() {
-    const splash = document.getElementById('splash');
-    const loading = document.getElementById('frame-loading');
-    const frame = document.getElementById('app-frame');
-
-    // Nascondi splash
-    splash.classList.add('hidden');
-    setTimeout(() => { splash.style.display = 'none'; }, 500);
-
-    // Mostra loading
-    loading.classList.add('active');
-
-    // Carica GAS nell'iframe a tutto schermo
-    frame.src = GAS_URL;
-    frame.style.display = 'block';
-
-    // Nascondi loading quando iframe è pronto
-    frame.onload = () => {
-        loading.classList.remove('active');
-    };
-
-    // Fallback timeout
-    setTimeout(() => {
-        loading.classList.remove('active');
+})();
+</script>
+<script>
+// =====================================================
+// GESTIONE SPLASH SCREEN
+// =====================================================
+document.addEventListener('DOMContentLoaded', function() {
+    var splashScreen = document.getElementById('splashScreen');
+    var mainContainer = document.getElementById('mainContainer');
+    var enterBtn = document.getElementById('splashEnterBtn');
+    var mobileLoading = document.getElementById('mobileLoading');
+    
+    if (mobileLoading) {
+        mobileLoading.style.display = 'none';
+    }
+    
+    enterBtn.addEventListener('click', function() {
+        if (mobileLoading) {
+            mobileLoading.style.display = 'flex';
+        }
+        
+        splashScreen.classList.add('hidden');
+        
+        setTimeout(function() {
+            splashScreen.style.display = 'none';
+            mainContainer.style.display = 'block';
+            
+            setTimeout(function() {
+                if (mobileLoading) {
+                    mobileLoading.classList.add('hidden');
+                }
+            }, 1000);
+        }, 500);
+    });
+    
+    setTimeout(function() {
+        if (splashScreen.style.display !== 'none') {
+            enterBtn.click();
+        }
     }, 10000);
+});
+ 
+// =====================================================
+// SISTEMA GESTIONE EVENT LISTENERS
+// =====================================================
+var listenerManager = {
+    listeners: new Map(),
+    initialized: false,
+    
+    add: function(elementId, event, handler) {
+        var element = document.getElementById(elementId);
+        if (!element) {
+            console.warn('Elemento non trovato: ' + elementId);
+            return false;
+        }
+        var key = elementId + '-' + event;
+        if (this.listeners.has(key)) {
+            var oldHandler = this.listeners.get(key);
+            element.removeEventListener(event, oldHandler);
+        }
+        this.listeners.set(key, handler);
+        element.addEventListener(event, handler);
+        return true;
+    },
+    
+    removeAll: function() {
+        this.listeners.forEach(function(handler, key) {
+            var parts = key.split('-');
+            var elementId = parts[0];
+            var evt = parts[1];
+            var element = document.getElementById(elementId);
+            if (element) {
+                element.removeEventListener(evt, handler);
+            }
+        });
+        this.listeners.clear();
+    },
+    
+    getCount: function() {
+        return this.listeners.size;
+    }
+};
+ 
+// =====================================================
+// GESTIONE TRIGGER AUTOMATICI
+// =====================================================
+async function checkTriggerStatus() {
+    var statusDiv = document.getElementById('trigger-status');
+    var statusIcon = document.getElementById('trigger-status-icon');
+    var statusTitle = document.getElementById('trigger-status-title');
+    var statusSubtitle = document.getElementById('trigger-status-subtitle');
+    
+    if (!statusDiv) return;
+    
+    try {
+        var result = await makeRequest('getTriggerStatusDetailed');
+        console.log('Stato trigger:', result);
+        
+        if (result.status === 'ok' && result.data) {
+            var data = result.data;
+            
+            if (data.active && data.count > 0) {
+                statusDiv.className = 'trigger-status-modern active';
+                statusIcon.textContent = '✅';
+                statusTitle.textContent = 'Sistema Attivo';
+                
+                if (data.triggers && data.triggers.length > 0) {
+                    var details = data.triggers.map(function(t) { return t.icona + ' ' + t.descrizione; }).join(' • ');
+                    statusSubtitle.textContent = data.count + ' trigger configurati: ' + details;
+                } else {
+                    statusSubtitle.textContent = data.count + ' trigger configurati - Esecuzione automatica attiva';
+                }
+            } else {
+                statusDiv.className = 'trigger-status-modern inactive';
+                statusIcon.textContent = '❌';
+                statusTitle.textContent = 'Sistema Non Attivo';
+                statusSubtitle.textContent = 'Nessun trigger configurato - Clicca "Attiva Trigger" per iniziare';
+            }
+        } else {
+            statusDiv.className = 'trigger-status-modern inactive';
+            statusIcon.textContent = '⚠️';
+            statusTitle.textContent = 'Errore Verifica';
+            statusSubtitle.textContent = result.message || 'Impossibile verificare lo stato';
+        }
+        
+    } catch (error) {
+        console.error('Errore checkTriggerStatus:', error);
+        if (statusDiv) {
+            statusDiv.className = 'trigger-status-modern inactive';
+            statusIcon.textContent = '⚠️';
+            statusTitle.textContent = 'Errore Connessione';
+            statusSubtitle.textContent = 'Impossibile contattare il server';
+        }
+    }
+}
+ 
+async function checkSmartTriggerStatus() {
+    var statusText = document.getElementById('trigger-status-text');
+    if (!statusText) return;
+    
+    try {
+        var result = await makeRequest('getTriggerStatusDetailed');
+        
+        if (result.status === 'ok' && result.data) {
+            if (result.data.active && result.data.count > 0) {
+                statusText.innerHTML = '✅ Sistema Attivo - ' + result.data.count + ' trigger configurati';
+            } else {
+                statusText.innerHTML = '❌ Sistema Non Attivo - Attiva i trigger nella sezione sopra';
+            }
+        } else {
+            statusText.innerHTML = '⚠️ Impossibile verificare lo stato';
+        }
+    } catch (error) {
+        console.error('Errore checkSmartTriggerStatus:', error);
+        statusText.innerHTML = '⚠️ Errore connessione';
+    }
+}
+ 
+function setupTriggerEventListeners() {
+    listenerManager.add('btn-attiva-trigger', 'click', attivaTrigger);
+    listenerManager.add('btn-disattiva-trigger', 'click', disattivaTrigger);
+    listenerManager.add('btn-aggiorna-trigger', 'click', aggiornaTriggerVersione);
+    console.log('Event listener trigger configurati');
 }
 </script>
 
+<script>
+// =====================================================
+// GESTIONE RICORRENZE INTELLIGENTI E DEBUG
+// =====================================================
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.systemInitialized) {
+        console.warn('Sistema gia inizializzato, ignorando...');
+        return;
+    }
+    window.systemInitialized = true;
+    
+    console.log('Inizializzazione sistema prenotazioni...');
+    
+    setupSmartRecurringListeners();
+    
+    if (typeof isAdminLoggedIn !== 'undefined' && isAdminLoggedIn) {
+        checkSmartTriggerStatus();
+    }
+});
+ 
+function setupSmartRecurringListeners() {
+    var testBtn = document.getElementById('btn-test-smart-recurring');
+    if (testBtn) {
+        listenerManager.add('btn-test-smart-recurring', 'click', async function(event) {
+            var btn = event.target.closest('button');
+            btn.classList.add('loading');
+            btn.disabled = true;
+            
+            try {
+                var result = await makeRequest('testSmartRecurring');
+                if (result.success) {
+                    showBanner('Test completato: ' + result.tests.length + ' test eseguiti, ' + result.summary.passed + ' successi', 'success', 6000);
+                    await loadInitialData(true);
+                    await checkSmartTriggerStatus();
+                } else {
+                    showBanner('Errore: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showBanner('Errore durante il test del sistema', 'error');
+            } finally {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        });
+    }
+    
+    var archiveBtn = document.getElementById('btn-manual-archive');
+    if (archiveBtn) {
+        listenerManager.add('btn-manual-archive', 'click', async function(event) {
+            var btn = event.target.closest('button');
+            btn.classList.add('loading');
+            btn.disabled = true;
+            
+            try {
+                var result = await makeRequest('manualRecurringCheck');
+                if (result.status === 'ok') {
+                    showBanner('Processo completato: ' + result.data.generatedCount + ' ricorrenze generate, ' + result.data.archivedCount + ' eventi archiviati', 'success', 6000);
+                    await loadInitialData(true);
+                    await checkSmartTriggerStatus();
+                } else {
+                    showBanner('Errore: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showBanner('Errore durante il processo', 'error');
+            } finally {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        });
+    }
+    
+    setupDebugTools();
+}
+ 
+function setupDebugTools() {
+    var debugCalendarBtn = document.getElementById('btn-debug-calendar');
+    if (debugCalendarBtn) {
+        listenerManager.add('btn-debug-calendar', 'click', function() {
+            var result = debugCalendarComplete();
+            showBanner(result.message, 'info', 4000);
+        });
+    }
+    
+    var clearCacheBtn = document.getElementById('btn-clear-cache');
+    if (clearCacheBtn) {
+        listenerManager.add('btn-clear-cache', 'click', async function() {
+            try {
+                var result = await makeRequest('clearBookingsCache');
+                if (result.status === 'ok') {
+                    showBanner('Cache pulita con successo', 'success');
+                    await loadInitialData(true);
+                }
+            } catch (error) {
+                showBanner('Errore pulizia cache', 'error');
+            }
+        });
+    }
+    
+    var testTelegramBtn = document.getElementById('btn-test-telegram');
+    if (testTelegramBtn) {
+        listenerManager.add('btn-test-telegram', 'click', async function(event) {
+            var btn = event.target.closest('button');
+            btn.classList.add('loading');
+            btn.disabled = true;
+            
+            try {
+                var result = await makeRequest('testTelegramNotification');
+                if (result.status === 'ok') {
+                    showBanner('Test Telegram inviato con successo', 'success');
+                } else {
+                    showBanner('Errore: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showBanner('Errore test Telegram', 'error');
+            } finally {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        });
+    }
+}
+ 
+// =====================================================
+// GESTIONE ADMIN MANAGEMENT (MASTER ADMIN)
+// =====================================================
+var selectedAdminForDelete = null;
+ 
+function updateAdminManagementVisibility() {
+    var section = document.getElementById('admin-management-section');
+    var body = document.body;
+    
+    if (currentAdminEmail && currentAdminEmail.toLowerCase() === 'prenotazionecampoanspi@gmail.com') {
+        body.classList.add('master-admin');
+        if (section) {
+            section.style.display = 'block';
+            loadAdminsTable();
+        }
+    } else {
+        body.classList.remove('master-admin');
+        if (section) {
+            section.style.display = 'none';
+        }
+    }
+}
+ 
+async function loadAdminsTable() {
+    try {
+        var result = await makeRequest('getAllAdmins');
+        if (result.status === 'ok') {
+            renderAdminsTable(result.data.admins);
+        }
+    } catch (error) {
+        console.error('Errore caricamento admin:', error);
+        showBanner('Errore caricamento lista admin', 'error');
+    }
+}
+ 
+function renderAdminsTable(admins) {
+    var tbody = document.querySelector('#admin-table tbody');
+    if (!tbody) return;
+    
+    if (admins.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nessun admin trovato</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = '';
+    
+    admins.forEach(function(admin) {
+        var isMaster = admin.email.toLowerCase() === 'prenotazionecampoanspi@gmail.com';
+        var row = document.createElement('tr');
+        
+        var emailCell = document.createElement('td');
+        emailCell.innerHTML = admin.email + (isMaster ? ' <span style="color: #dc3545;">MASTER</span>' : '');
+        row.appendChild(emailCell);
+        
+        var nameCell = document.createElement('td');
+        nameCell.textContent = admin.nome || '-';
+        row.appendChild(nameCell);
+        
+        var actionsCell = document.createElement('td');
+        if (!isMaster) {
+            actionsCell.innerHTML = '<button class="btn btn-warning btn-sm" onclick="resetAdminPassword(\'' + admin.email + '\')" style="margin-right: 5px;">Reset Password</button>' +
+                '<button class="btn btn-danger btn-sm" onclick="confirmDeleteAdmin(\'' + admin.email + '\')">Rimuovi</button>';
+        } else {
+            actionsCell.innerHTML = '<span style="color: #6c757d;">Non modificabile</span>';
+        }
+        row.appendChild(actionsCell);
+        
+        tbody.appendChild(row);
+    });
+}
+ 
+async function resetAdminPassword(email) {
+    if (!confirm('Resettare la password per ' + email + '?')) {
+        return;
+    }
+    
+    try {
+        var result = await makeRequest('resetAdminPassword', {
+            masterEmail: currentAdminEmail,
+            adminEmailToReset: email
+        });
+        
+        if (result.status === 'ok') {
+            showBanner(result.message, 'success');
+            loadAdminsTable();
+        } else {
+            showBanner(result.message, 'error');
+        }
+    } catch (error) {
+        showBanner('Errore reset password', 'error');
+    }
+}
+ 
+function confirmDeleteAdmin(email) {
+    selectedAdminForDelete = email;
+    var modal = document.getElementById('confirm-delete-admin-modal');
+    var text = document.getElementById('confirm-delete-admin-text');
+    text.textContent = 'Sei sicuro di voler rimuovere l\'admin ' + email + '? Questa azione non puo essere annullata.';
+    modal.style.display = 'block';
+}
+ 
+function closeDeleteAdminModal() {
+    var modal = document.getElementById('confirm-delete-admin-modal');
+    modal.style.display = 'none';
+    selectedAdminForDelete = null;
+}
+ 
+document.addEventListener('DOMContentLoaded', function() {
+    var addAdminForm = document.getElementById('add-admin-form');
+    if (addAdminForm) {
+        addAdminForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            var email = document.getElementById('new-admin-email').value.trim();
+            var nome = document.getElementById('new-admin-nome').value.trim();
+            
+            if (!email || !email.includes('@')) {
+                showBanner('Inserisci un email valida', 'error');
+                return;
+            }
+            
+            try {
+                var result = await makeRequest('addNewAdmin', {
+                    masterEmail: currentAdminEmail,
+                    newAdminEmail: email,
+                    nome: nome
+                });
+                
+                if (result.status === 'ok') {
+                    showBanner(result.message, 'success');
+                    addAdminForm.reset();
+                    loadAdminsTable();
+                } else {
+                    showBanner(result.message, 'error');
+                }
+            } catch (error) {
+                showBanner('Errore aggiunta admin', 'error');
+            }
+        });
+    }
+    
+    var confirmDeleteBtn = document.getElementById('confirm-delete-admin-btn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', async function() {
+            if (!selectedAdminForDelete) return;
+            
+            try {
+                var result = await makeRequest('removeAdmin', {
+                    masterEmail: currentAdminEmail,
+                    adminEmailToRemove: selectedAdminForDelete
+                });
+                
+                if (result.status === 'ok') {
+                    showBanner(result.message, 'success');
+                    closeDeleteAdminModal();
+                    loadAdminsTable();
+                } else {
+                    showBanner(result.message, 'error');
+                }
+            } catch (error) {
+                showBanner('Errore rimozione admin', 'error');
+            }
+        });
+    }
+});
+ 
+// =====================================================
+// HOOK SHOWADMINTAB UNIFICATO
+// =====================================================
+function enhanceShowAdminTab() {
+    if (typeof window.showAdminTab === 'function') {
+        var originalFunction = window.showAdminTab;
+        
+        window.showAdminTab = function(tabName) {
+            var result = originalFunction.call(this, tabName);
+            
+            if (tabName === 'gestione-campo') {
+                updateAdminManagementVisibility();
+                
+                setTimeout(function() {
+                    setupTriggerEventListeners();
+                    checkTriggerStatus();
+                    checkSmartTriggerStatus();
+                }, 500);
+            }
+            
+            return result;
+        };
+        
+        console.log('showAdminTab enhanced');
+    } else {
+        console.warn('showAdminTab non trovata, riprovo...');
+        setTimeout(enhanceShowAdminTab, 1000);
+    }
+}
+ 
+setTimeout(enhanceShowAdminTab, 2000);
+ 
+// =====================================================
+// CLEANUP AUTOMATICO
+// =====================================================
+window.addEventListener('beforeunload', function() {
+    if (window.listenerManager) {
+        listenerManager.removeAll();
+        console.log('Listener puliti automaticamente');
+    }
+});
+</script>
+
+    <!-- (Rimosso) Iniezione versione server/client -->
+
+    <?!= include('script'); ?>
+
+    <!-- (Rimosso) Modale versione obsoleta -->
+<script>
+window._test123 = 'funziona';
+</script>
 </body>
 </html>
