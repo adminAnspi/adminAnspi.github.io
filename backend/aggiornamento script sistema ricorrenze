@@ -1,6 +1,6 @@
 <script> 
 // =====================
-// COSTANTI CLIENT-SIDE 
+// COSTANTI CLIENT-SIDE blocco 1
 // =====================
 var ICONS = {
     calcetto: '⚽',
