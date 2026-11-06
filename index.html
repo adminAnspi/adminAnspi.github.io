@@ -6,6 +6,7 @@
     <title>Campo Don Michele FIORE</title>
 
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icon-192.png">
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Campo ANSPI">
@@ -139,7 +140,7 @@
             font-weight: 600;
         }
 
-        /* ===== LOADING ===== */
+        /* ===== CARICAMENTO ===== */
         #frame-loading {
             display: none;
             position: fixed;
@@ -172,12 +173,12 @@
             font-size: 1.1rem;
         }
 
-        /* ===== IFRAME A TUTTO SCHERMO ===== */
+        /* ===== APP A TUTTO SCHERMO ===== */
         #app-frame {
             display: none;
             position: fixed;
             top: 0; left: 0;
-            width: 100vw;
+            width: 100%;
             height: 100%;
             border: none;
             z-index: 1000;
@@ -187,10 +188,10 @@
 </head>
 <body>
 
-<!-- SPLASH -->
+<!-- SCHERMATA INIZIALE -->
 <div id="splash">
     <div class="splash-card">
-        <img src="icon-192.png" alt="Logo Campo ANSPI" class="splash-logo">
+        <img src="icon-192.png" alt="Logo" class="splash-logo">
         <div class="splash-title">Campo Don Michele FIORE</div>
         <div class="splash-subtitle">⚽ Parrocchia Sant'Agostino · ANSPI Giovinazzo</div>
 
@@ -206,13 +207,13 @@
     </div>
 </div>
 
-<!-- LOADING -->
+<!-- CARICAMENTO -->
 <div id="frame-loading">
     <div class="spinner"></div>
     <div class="loading-text">Caricamento...</div>
 </div>
 
-<!-- IFRAME A TUTTO SCHERMO -->
+<!-- APP A TUTTO SCHERMO -->
 <iframe
     id="app-frame"
     src=""
@@ -221,6 +222,7 @@
 </iframe>
 
 <script>
+// Indirizzo dell'app (deployment "abfkvo"): cambiarlo solo se si crea un nuovo deployment
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwmRg1QHpxWpVttfAnZA0HHH_Z_J_VqLDM-9xfMQv7V-coRwubcmHT6yPTBUhabfkvo/exec';
 
 let deferredPrompt = null;
@@ -229,7 +231,7 @@ const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true;
 
-// Se già installata e aperta in standalone, vai subito all'app
+// Aperta dall'icona sul telefono: si entra subito nell'app
 if (isStandalone) {
     goToApp();
 }
@@ -270,32 +272,32 @@ function goToApp() {
     const loading = document.getElementById('frame-loading');
     const frame = document.getElementById('app-frame');
 
-    // Nascondi splash
+    // Nasconde la schermata iniziale
     splash.classList.add('hidden');
     setTimeout(() => { splash.style.display = 'none'; }, 500);
 
-    // Mostra loading
+    // Mostra il caricamento
     loading.classList.add('active');
 
-    // Carica GAS nell'iframe a tutto schermo
-            // Aperta dall'icona (pagina GitHub): la splash di GitHub e gia stata mostrata
-        if (window.serverData && window.serverData.da === 'app') enterBtn.click();
-        setTimeout(function() {
-            if (splashScreen.style.display !== 'none') enterBtn.click();
-        }, 10000);
+    // Carica l'app nella cornice a tutto schermo
+    // (?da=app avvisa l'app di saltare la propria schermata iniziale)
+    frame.src = GAS_URL + '?da=app';
     frame.style.display = 'block';
 
-    // Nascondi loading quando iframe è pronto
+    // Nasconde il caricamento quando l'app è pronta
     frame.onload = () => {
         loading.classList.remove('active');
     };
 
-    // Fallback timeout
+    // Sicurezza: dopo 10 secondi nasconde comunque il caricamento
     setTimeout(() => {
         loading.classList.remove('active');
     }, 10000);
 }
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
