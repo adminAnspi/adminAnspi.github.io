@@ -278,7 +278,11 @@ function goToApp() {
     loading.classList.add('active');
 
     // Carica GAS nell'iframe a tutto schermo
-    frame.src = GAS_URL;
+            // Aperta dall'icona (pagina GitHub): la splash di GitHub e gia stata mostrata
+        if (window.serverData && window.serverData.da === 'app') enterBtn.click();
+        setTimeout(function() {
+            if (splashScreen.style.display !== 'none') enterBtn.click();
+        }, 10000);
     frame.style.display = 'block';
 
     // Nascondi loading quando iframe è pronto
